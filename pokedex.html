@@ -1971,7 +1971,7 @@ async function toggleAbilityFilter(abilityName, el) {
     el.classList.add('ability-active');
   }
   // Re-render just the weakness section
-  const types = currentPokemon.types.map(t => t.type.name);
+  const types = ((currentFormData && currentFormData.types) || currentPokemon.types).map(t => t.type.name);
   const weaknesses = computeWeaknesses(types, currentAbilityFilter);
   document.getElementById('weakness-section').innerHTML = weaknessHtml(weaknesses, currentAbilityFilter);
 }
@@ -2009,6 +2009,7 @@ async function loadPokemon(query) {
     currentSpecies = species;
     currentFormNormalSprite = null;
     currentFormShinySprite = null;
+    currentFormData = null;
     isShiny = false;
 
     // fetch evo chain
@@ -2218,6 +2219,11 @@ async function renderStats() {
   const p = currentPokemon;
   if (!p) return;
 
+  // Use form-specific data if a form is selected
+  const activeStats = (currentFormData && currentFormData.stats) || p.stats;
+  const activeTypes = (currentFormData && currentFormData.types) || p.types;
+  const activeAbilities = (currentFormData && currentFormData.abilities) || p.abilities;
+
   const statNames = {
     'hp':'HP','attack':'Attack','defense':'Defense',
     'special-attack':'Sp. Atk','special-defense':'Sp. Def','speed':'Speed'
@@ -2225,7 +2231,7 @@ async function renderStats() {
   const statClasses = {};
 
   let total = 0;
-  const rows = p.stats.map(s => {
+  const rows = activeStats.map(s => {
     const base = s.base_stat;
     total += base;
     const pct = Math.min(100, (base / 255) * 100);
@@ -2245,13 +2251,13 @@ async function renderStats() {
   }).join('');
 
   // Compute initial weaknesses (no ability)
-  const types = p.types.map(t => t.type.name);
+  const types = activeTypes.map(t => t.type.name);
   currentAbilityFilter = null;
   const weaknesses = computeWeaknesses(types, null);
   const weakHtml = weaknessHtml(weaknesses, null);
 
   // Build abilities HTML (descriptions loaded async after render)
-  const abilitiesHtml = p.abilities.map(a => {
+  const abilitiesHtml = activeAbilities.map(a => {
     const name = a.ability.name;
     const isHidden = a.is_hidden;
     const hasMod = !!ABILITY_TYPE_MODS[name];
@@ -2290,7 +2296,7 @@ async function renderStats() {
   `);
 
   // Load ability descriptions asynchronously
-  for (const a of p.abilities) {
+  for (const a of activeAbilities) {
     const name = a.ability.name;
     const info = await fetchAbilityDesc(name);
     const el = document.getElementById(`ability-desc-${name}`);
@@ -2333,6 +2339,8 @@ async function renderEvo() {
 
     // Also get all forms
     const formVariants = await loadForms(currentPokemon.id, currentSpecies);
+    // Store form variants globally so setForm can look up data by index
+    window._formVariants = formVariants;
 
     let evoHtml = buildEvoHtml(stages);
     let formsHtml = '';
@@ -2341,9 +2349,9 @@ async function renderEvo() {
       formsHtml = `
         <div class="section-header" style="margin-top:20px">Alternate Forms</div>
         <div class="forms-grid">
-          ${formVariants.map(f => `
+          ${formVariants.map((f, i) => `
             <div class="form-card ${f.sprite === activeNormal ? 'active-form':''}"
-                 onclick="setForm('${f.sprite}','${f.shinySprite || ''}','${f.name}')">
+                 onclick="setFormByIndex(${i})">
               <img src="${f.sprite}" alt="${f.name}"
                    onerror="this.style.display='none'"/>
               <span>${f.name.replace(/-/g,' ')}</span>
@@ -2429,6 +2437,9 @@ async function loadForms(id, species) {
           name: pData.name,
           sprite: normalSprite,
           shinySprite: shinySprite,
+          stats: pData.stats,
+          types: pData.types,
+          abilities: pData.abilities,
         });
       }
     } catch(e) {}
@@ -2436,17 +2447,29 @@ async function loadForms(id, species) {
   return forms;
 }
 
-function setForm(normalSprite, shinySprite, name) {
+// Holds the full data for the currently active form (null = use currentPokemon)
+let currentFormData = null;
+
+function setForm(normalSprite, shinySprite, name, formData) {
   currentFormNormalSprite = normalSprite || null;
   currentFormShinySprite = shinySprite || null;
+  currentFormData = formData || null;
   const img = document.getElementById('mainSprite');
   if (img) {
     const url = getSpriteUrl(currentPokemon, isShiny);
     img.style.opacity = '0';
     setTimeout(() => { img.src = url; img.style.opacity = '1'; img.alt = name; }, 150);
   }
+  // Re-render stats tab if active so stats/weaknesses update immediately
+  if (currentTab === 'stats') renderStats();
   // refresh forms tab to update active state
   renderEvo();
+}
+
+function setFormByIndex(i) {
+  const f = window._formVariants && window._formVariants[i];
+  if (!f) return;
+  setForm(f.sprite, f.shinySprite || '', f.name, f);
 }
 
 // ── GAMES ──
