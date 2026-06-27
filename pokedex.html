@@ -2000,10 +2000,24 @@ async function randomPokemon() {
 async function loadPokemon(query) {
   showLoading();
   try {
-    const poke = await fetch(`${API}/pokemon/${query}`).then(r => {
-      if (!r.ok) throw new Error('Not found');
-      return r.json();
-    });
+    let poke;
+    // First try direct lookup (works for most pokemon and numbered IDs)
+    const r = await fetch(`${API}/pokemon/${query}`);
+    if (r.ok) {
+      poke = await r.json();
+    } else {
+      // Fall back to species lookup — catches pokemon whose PokéAPI entry
+      // has a suffix (e.g. "aegislash" → "aegislash-shield", "meowstic" → "meowstic-male")
+      const speciesResp = await fetch(`${API}/pokemon-species/${query}`);
+      if (!speciesResp.ok) throw new Error('Not found');
+      const speciesData = await speciesResp.json();
+      // Use the default variety
+      const defaultVariety = speciesData.varieties.find(v => v.is_default) || speciesData.varieties[0];
+      const pr = await fetch(defaultVariety.pokemon.url);
+      if (!pr.ok) throw new Error('Not found');
+      poke = await pr.json();
+    }
+
     const species = await fetch(poke.species.url).then(r => r.json());
     currentPokemon = poke;
     currentSpecies = species;
