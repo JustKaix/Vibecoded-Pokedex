@@ -60,6 +60,7 @@
     width: 1100px;
     height: 700px;
     flex-shrink: 0;
+    position: relative;
   }
 
   /* LEFT HALF */
@@ -535,6 +536,24 @@
     color: #333;
     display: block;
   }
+
+  .info-card.height-trigger {
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .info-card.height-trigger:hover {
+    background: #fff5f5;
+    border-color: var(--red);
+  }
+  .info-card.height-trigger:hover value { color: var(--red-dark); }
+  .height-trigger-hint {
+    font-size: 9px;
+    color: #bbb;
+    margin-left: 6px;
+    font-family: var(--font-body);
+  }
+  .info-card.height-trigger:hover .height-trigger-hint { color: var(--red); }
 
   .pokedex-num {
     font-family: var(--font-pixel);
@@ -1151,6 +1170,403 @@
     transition: all 0.15s;
   }
   .settings-reset-btn:hover { background: #ddd; color: #444; }
+
+  /* ── HEIGHT COMPARISON MODAL ── */
+  .height-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,8,16,0.78);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    border-radius: 24px;
+  }
+  .height-modal-overlay.open { display: flex; }
+
+  .height-modal {
+    width: 1010px;
+    height: 630px;
+    background: linear-gradient(160deg, #f4f4f4 0%, #e6e6e6 100%);
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 3px #ccc;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .height-modal-header {
+    background: linear-gradient(to bottom, var(--red-shine), var(--red-dark));
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .height-modal-header h3 {
+    font-family: var(--font-pixel);
+    font-size: 11px;
+    color: white;
+    text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+  }
+  .height-modal-close {
+    background: rgba(0,0,0,0.25);
+    border: none;
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+  .height-modal-close:hover { background: rgba(0,0,0,0.45); }
+
+  .height-modal-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+
+  /* sidebar controls */
+  .height-sidebar {
+    width: 270px;
+    flex-shrink: 0;
+    background: #fafafa;
+    border-right: 2px solid #e0e0e0;
+    padding: 14px;
+    overflow-y: auto;
+  }
+  .height-sidebar .section-header { font-size: 6px; margin-bottom: 8px; }
+
+  .height-add-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .height-add-row input {
+    flex: 1;
+    min-width: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    outline: none;
+  }
+  .height-add-row input:focus { border-color: var(--red); }
+  .height-add-btn {
+    background: linear-gradient(to bottom, var(--red-light), var(--red-dark));
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    padding: 0 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #660000;
+    flex-shrink: 0;
+  }
+  .height-add-btn:hover { filter: brightness(1.1); }
+  .height-add-btn:active { transform: translateY(2px); box-shadow: none; }
+  .height-add-error {
+    font-size: 10px;
+    color: var(--red-dark);
+    margin: -4px 0 10px 2px;
+    min-height: 12px;
+  }
+
+  .height-trainer-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 14px;
+  }
+  .height-trainer-toggle-row label {
+    font-family: var(--font-pixel);
+    font-size: 5px;
+    color: #555;
+    text-transform: uppercase;
+  }
+  .height-checkbox-btn {
+    width: 36px; height: 20px;
+    border-radius: 10px;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .height-checkbox-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: left 0.2s;
+  }
+  .height-checkbox-btn.on { background: var(--red); }
+  .height-checkbox-btn.on::before { left: 18px; }
+
+  .height-trainer-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: -6px 0 14px 0;
+    padding: 0 2px;
+  }
+  .height-trainer-input-row input[type="number"] {
+    width: 48px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 4px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .height-trainer-input-row span { font-size: 10px; color: #888; }
+
+  .height-compare-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .height-compare-card {
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .height-compare-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .height-compare-card img.height-chip-sprite {
+    width: 28px; height: 28px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+  .height-compare-card-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .height-compare-card-val {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #999;
+    flex-shrink: 0;
+  }
+  .height-remove-x {
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    padding: 0 2px;
+  }
+  .height-remove-x:hover { color: var(--red); }
+
+  .height-scale-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+  }
+  .height-scale-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .height-scale-row-label .scale-badge {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--red-dark);
+    background: rgba(204,0,0,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .height-scale-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #aac8e8, #ddd 50%, #e8b0a0);
+    outline: none;
+    cursor: pointer;
+  }
+  .height-scale-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--red);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .height-scale-unavailable {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+    font-size: 9px;
+    color: #bbb;
+    font-style: italic;
+  }
+  .height-scale-note {
+    font-size: 9px;
+    color: #aaa;
+    line-height: 1.4;
+    margin-top: 10px;
+  }
+
+  /* chart area */
+  .height-chart-area {
+    flex: 1;
+    padding: 18px 24px 10px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .height-chart-scroll {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+  }
+  .height-chart {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .height-track-row {
+    position: relative;
+  }
+  .height-ruler {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 46px;
+  }
+  .height-ruler-tick {
+    position: absolute;
+    left: 30px;
+    width: 16px;
+    height: 1px;
+    background: #bbb;
+  }
+  .height-ruler-tick.major { background: #888; width: 16px; height: 2px; }
+  .height-ruler-label {
+    position: absolute;
+    left: 0;
+    width: 26px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #888;
+    transform: translateY(-50%);
+  }
+  .height-ground-line {
+    position: absolute;
+    left: 46px; right: 0; bottom: 0;
+    height: 3px;
+    background: linear-gradient(to bottom, #999, #777);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .height-silhouettes-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 28px;
+    height: 100%;
+    padding-left: 62px;
+    position: relative;
+  }
+  .height-col-slot {
+    position: relative;
+    width: 96px;
+    height: 100%;
+    flex-shrink: 0;
+  }
+  .height-footer-row {
+    display: flex;
+    gap: 28px;
+    padding-left: 62px;
+    margin-top: 8px;
+  }
+  .height-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 96px;
+    flex-shrink: 0;
+  }
+  .height-silhouette {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: brightness(0);
+    opacity: 0.82;
+  }
+  .height-silhouette.is-current { opacity: 1; filter: brightness(0) saturate(100%); }
+  .height-silhouette-svg {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    fill: #2a2a2a;
+  }
+  .height-col-footer {
+    flex-shrink: 0;
+    text-align: center;
+    width: 100%;
+  }
+  .height-col-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #333;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .height-col-value {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red-dark);
+    font-weight: 600;
+  }
+  .height-col-icon {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+  .height-empty-chart {
+    color: #aaa;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    text-align: center;
+    margin: auto;
+  }
 </style>
 </head>
 <body>
@@ -1240,6 +1656,24 @@
         </svg>
         <h2>POKÉDEX</h2>
         <p>Search for a Pokémon by name or number<br/>to view its data.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEIGHT COMPARISON MODAL -->
+  <div class="height-modal-overlay" id="heightModalOverlay" onclick="if(event.target===this) closeHeightModal()">
+    <div class="height-modal">
+      <div class="height-modal-header">
+        <h3>📏 HEIGHT COMPARISON</h3>
+        <button class="height-modal-close" onclick="closeHeightModal()">×</button>
+      </div>
+      <div class="height-modal-body">
+        <div class="height-sidebar" id="heightSidebar"></div>
+        <div class="height-chart-area">
+          <div class="height-chart-scroll">
+            <div class="height-chart" id="heightChart"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1694,7 +2128,7 @@ async function renderInfo() {
 
     <div class="section-header">Base Info</div>
     <div class="info-grid">
-      <div class="info-card"><label>Height</label><value>${heightDisplay}</value></div>
+      <div class="info-card height-trigger" onclick="openHeightModal()" title="Click to compare height"><label>Height</label><value>${heightDisplay}<span class="height-trigger-hint">📏 compare</span></value></div>
       <div class="info-card"><label>Weight</label><value>${settings.heightUnit === 'imperial' ? (weight * 2.20462).toFixed(1) + ' lbs' : weight + ' kg'}</value></div>
       <div class="info-card" style="grid-column:span 2"><label>Abilities</label><value style="font-size:12px">${abilities}</value></div>
       <div class="info-card"><label>Generation</label><value style="font-size:12px">${generation}</value></div>
@@ -1973,45 +2407,42 @@ function setForm(normalSprite, shinySprite, name) {
 }
 
 // ── GAMES ──
-async function renderGames() {
-  const p = currentPokemon;
-  if (!p) return;
+// Map version groups → individual game versions (shared by renderGames + scale-availability check)
+const VG_TO_VERSIONS = {
+  'red-blue':                        ['red','blue'],
+  'yellow':                          ['yellow'],
+  'gold-silver':                     ['gold','silver'],
+  'crystal':                         ['crystal'],
+  'ruby-sapphire':                   ['ruby','sapphire'],
+  'emerald':                         ['emerald'],
+  'firered-leafgreen':               ['firered','leafgreen'],
+  'diamond-pearl':                   ['diamond','pearl'],
+  'platinum':                        ['platinum'],
+  'heartgold-soulsilver':            ['heartgold','soulsilver'],
+  'black-white':                     ['black','white'],
+  'black-2-white-2':                 ['black-2','white-2'],
+  'x-y':                             ['x','y'],
+  'omega-ruby-alpha-sapphire':       ['omega-ruby','alpha-sapphire'],
+  'sun-moon':                        ['sun','moon'],
+  'ultra-sun-ultra-moon':            ['ultra-sun','ultra-moon'],
+  'lets-go-pikachu-lets-go-eevee':   ['lets-go-pikachu','lets-go-eevee'],
+  'sword-shield':                    ['sword','shield'],
+  'the-isle-of-armor':               ['the-isle-of-armor'],
+  'the-crown-tundra':                ['the-crown-tundra'],
+  'brilliant-diamond-and-shining-pearl': ['brilliant-diamond','shining-pearl'],
+  'legends-arceus':                  ['legends-arceus'],
+  'scarlet-violet':                  ['scarlet','violet'],
+  'the-teal-mask':                   ['the-teal-mask'],
+  'the-indigo-disk':                 ['the-indigo-disk'],
+  'legends-za':                      ['legends-za'],
+};
 
-  // game_indices only covers up to Gen 5 in PokéAPI.
-  // For Gen 6+, derive presence from move version_group_details.
+// Derive the full set of games a Pokémon appears in.
+// game_indices only covers up to Gen 5 in PokéAPI; for Gen 6+ we derive
+// presence from move version_group_details, plus our local Gen 10 roster.
+function derivePokemonGameSet(p) {
   const indexGames = new Set(p.game_indices?.map(g => g.version.name) || []);
 
-  // Map version groups → individual game versions
-  const vgToVersions = {
-    'red-blue':                        ['red','blue'],
-    'yellow':                          ['yellow'],
-    'gold-silver':                     ['gold','silver'],
-    'crystal':                         ['crystal'],
-    'ruby-sapphire':                   ['ruby','sapphire'],
-    'emerald':                         ['emerald'],
-    'firered-leafgreen':               ['firered','leafgreen'],
-    'diamond-pearl':                   ['diamond','pearl'],
-    'platinum':                        ['platinum'],
-    'heartgold-soulsilver':            ['heartgold','soulsilver'],
-    'black-white':                     ['black','white'],
-    'black-2-white-2':                 ['black-2','white-2'],
-    'x-y':                             ['x','y'],
-    'omega-ruby-alpha-sapphire':       ['omega-ruby','alpha-sapphire'],
-    'sun-moon':                        ['sun','moon'],
-    'ultra-sun-ultra-moon':            ['ultra-sun','ultra-moon'],
-    'lets-go-pikachu-lets-go-eevee':   ['lets-go-pikachu','lets-go-eevee'],
-    'sword-shield':                    ['sword','shield'],
-    'the-isle-of-armor':               ['the-isle-of-armor'],
-    'the-crown-tundra':                ['the-crown-tundra'],
-    'brilliant-diamond-and-shining-pearl': ['brilliant-diamond','shining-pearl'],
-    'legends-arceus':                  ['legends-arceus'],
-    'scarlet-violet':                  ['scarlet','violet'],
-    'the-teal-mask':                   ['the-teal-mask'],
-    'the-indigo-disk':                 ['the-indigo-disk'],
-    'legends-za':                      ['legends-za'],
-  };
-
-  // Collect all version groups referenced by this Pokémon's moves
   const moveVGs = new Set();
   for (const m of (p.moves || [])) {
     for (const d of m.version_group_details) {
@@ -2019,20 +2450,31 @@ async function renderGames() {
     }
   }
 
-  // Build final game set: index-based (Gen 1-5) + move-derived (all gens)
   const allGames = new Set(indexGames);
   for (const vg of moveVGs) {
-    const versions = vgToVersions[vg];
+    const versions = VG_TO_VERSIONS[vg];
     if (versions) versions.forEach(v => allGames.add(v));
   }
 
-  // ── Gen 10 local roster check ──
-  // PokéAPI has no Gen 10 game appearance data; check our local roster instead.
   for (const [gameKey, gameData] of Object.entries(GEN10_GAMES)) {
-    if (gameData.ids.has(p.id)) {
-      allGames.add(gameKey);
-    }
+    if (gameData.ids.has(p.id)) allGames.add(gameKey);
   }
+
+  return allGames;
+}
+
+// The "scale" mechanic (individual size 1-255) was introduced in Scarlet/Violet.
+// Only Pokémon confirmed to appear in those games get the scale slider.
+function pokemonSupportsScale(p) {
+  const games = derivePokemonGameSet(p);
+  return games.has('scarlet') || games.has('violet');
+}
+
+async function renderGames() {
+  const p = currentPokemon;
+  if (!p) return;
+
+  const allGames = derivePokemonGameSet(p);
 
   if (allGames.size === 0) {
     setContent('<div class="no-data">No game data available.</div>');
@@ -2191,9 +2633,10 @@ async function renderMoves() {
 // ── SETTINGS STATE ──
 const SETTINGS_DEFAULTS = {
   spriteSize: 200,   // px, shown on left screen
-  fontSize: 1.0,
+  fontSize: 1.1,
   uiScale: 1.0,     // multiplier applied to right panel
   heightUnit: 'imperial', // 'metric' | 'imperial'
+  trainerHeightIn: 68,    // default trainer height: 5'8"
 };
 let settings = { ...SETTINGS_DEFAULTS };
 
@@ -2212,6 +2655,293 @@ function applySettings() {
 
   // Re-render info tab if active so height unit updates
   if (currentTab === 'info' && currentPokemon) renderInfo();
+}
+
+// ── HEIGHT COMPARISON MODAL ──
+// entries: array of { kind:'trainer' } | { kind:'pokemon', id, name, sprite, baseHeightM, scaleSupported, scale, isCurrent }
+let heightCompare = { entries: [], includeTrainer: true };
+
+function formatFeetInches(totalInches) {
+  totalInches = Math.round(totalInches);
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  return `${feet}'${inches}"`;
+}
+
+// Shared height formatter so the INFO card and the modal always agree
+function formatHeight(heightM) {
+  if (settings.heightUnit === 'imperial') {
+    const totalInches = heightM / 0.0254;
+    return formatFeetInches(totalInches);
+  }
+  return `${heightM.toFixed(2)} m`;
+}
+
+function getBestArtwork(poke) {
+  return poke.sprites?.other?.['official-artwork']?.front_default
+    || poke.sprites?.front_default
+    || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png`;
+}
+
+// Approximate model of the Scarlet/Violet individual "scale" stat (1-255).
+// 128 ≈ average size (1.0×); 1 ≈ smallest (~0.5×); 255 ≈ largest (~1.5×).
+// This is a fan approximation for visualization purposes, not exact game data.
+const SCALE_DEFAULT = 128;
+function scaleMultiplier(scaleVal) {
+  return 0.5 + scaleVal / 256;
+}
+
+function makePokemonEntry(poke, isCurrent) {
+  return {
+    kind: 'pokemon',
+    uid: 'p' + poke.id + (isCurrent ? '-cur' : '-' + Math.random().toString(36).slice(2,7)),
+    id: poke.id,
+    name: poke.name.replace(/-/g,' '),
+    sprite: getBestArtwork(poke),
+    baseHeightM: poke.height / 10,
+    scaleSupported: pokemonSupportsScale(poke),
+    scale: SCALE_DEFAULT,
+    isCurrent: !!isCurrent,
+  };
+}
+
+function openHeightModal() {
+  if (!currentPokemon) return;
+  heightCompare.entries = [ makePokemonEntry(currentPokemon, true) ];
+  heightCompare.includeTrainer = true;
+  document.getElementById('heightModalOverlay').classList.add('open');
+  renderHeightModal();
+}
+
+function closeHeightModal() {
+  document.getElementById('heightModalOverlay').classList.remove('open');
+}
+
+function toggleTrainerCompare() {
+  heightCompare.includeTrainer = !heightCompare.includeTrainer;
+  renderHeightModal();
+}
+
+function syncTrainerEntryHeight() {
+  // Called from the Settings tab slider — live-update the modal if it's open
+  if (document.getElementById('heightModalOverlay')?.classList.contains('open')) {
+    renderHeightModal();
+  }
+}
+
+function updateTrainerHeightFromModal(totalInches) {
+  totalInches = Math.max(36, Math.min(96, +totalInches || settings.trainerHeightIn));
+  settings.trainerHeightIn = totalInches;
+  renderHeightModal();
+}
+
+function updateTrainerHeightFromModalCm(cm) {
+  const inches = (+cm || 0) / 2.54;
+  updateTrainerHeightFromModal(inches);
+}
+
+function removeCompareEntry(uid) {
+  heightCompare.entries = heightCompare.entries.filter(e => e.uid !== uid);
+  renderHeightModal();
+}
+
+function updateEntryScale(uid, scaleVal) {
+  const entry = heightCompare.entries.find(e => e.uid === uid);
+  if (entry) entry.scale = +scaleVal;
+  renderHeightModal();
+}
+
+async function addComparePokemon() {
+  const input = document.getElementById('heightAddInput');
+  const errEl = document.getElementById('heightAddError');
+  const query = input.value.trim().toLowerCase();
+  if (errEl) errEl.textContent = '';
+  if (!query) return;
+
+  try {
+    const poke = await fetch(`${API}/pokemon/${query}`).then(r => {
+      if (!r.ok) throw new Error('Not found');
+      return r.json();
+    });
+    heightCompare.entries.push(makePokemonEntry(poke, false));
+    input.value = '';
+    renderHeightModal();
+  } catch (e) {
+    if (errEl) errEl.textContent = `✗ "${query}" not found.`;
+  }
+}
+
+function buildPersonSilhouetteSVG(heightPx) {
+  // Simple generic humanoid silhouette, viewBox 0 0 100 280 (aspect ~0.357)
+  const w = Math.round(heightPx * (100/280));
+  return `<svg class="height-silhouette-svg" viewBox="0 0 100 280" style="height:${heightPx}px;width:${w}px" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="28" r="24"/>
+    <path d="M50 52
+      C 28 52, 16 66, 14 92
+      L 10 150 L 24 152 L 30 100
+      L 33 100 L 28 200 L 44 200 L 50 130 L 56 200 L 72 200 L 67 100
+      L 70 100 L 76 152 L 90 150 L 86 92
+      C 84 66, 72 52, 50 52 Z"/>
+    <rect x="38" y="195" width="11" height="78" rx="4"/>
+    <rect x="51" y="195" width="11" height="78" rx="4"/>
+  </svg>`;
+}
+
+function renderHeightModal() {
+  const unit = settings.heightUnit;
+
+  // Compute effective height (meters) for every visible entry
+  const rows = heightCompare.entries.map(e => ({
+    ...e,
+    effHeightM: e.baseHeightM * (e.scaleSupported ? scaleMultiplier(e.scale) : 1),
+  }));
+  if (heightCompare.includeTrainer) {
+    const trainerM = settings.trainerHeightIn * 0.0254;
+    rows.push({ kind: 'trainer', uid: 'trainer', effHeightM: trainerM });
+  }
+
+  // ── Sidebar ──
+  const trainerInches = settings.trainerHeightIn;
+  const trainerFeet = Math.floor(trainerInches/12), trainerRemIn = trainerInches % 12;
+
+  const compareCards = heightCompare.entries.map(e => {
+    const heightLabel = formatHeight(e.baseHeightM * (e.scaleSupported ? scaleMultiplier(e.scale) : 1));
+    const scaleBlock = e.scaleSupported
+      ? `<div class="height-scale-row">
+           <div class="height-scale-row-label">
+             <span>Scale (1–255, SV size)</span>
+             <span class="scale-badge" id="scaleVal-${e.uid}">${e.scale}</span>
+           </div>
+           <input type="range" class="height-scale-slider" min="1" max="255" step="1"
+             value="${e.scale}"
+             oninput="document.getElementById('scaleVal-${e.uid}').textContent=this.value"
+             onchange="updateEntryScale('${e.uid}', this.value)"/>
+         </div>`
+      : `<div class="height-scale-unavailable">No size-scale data available for this Pokémon's games.</div>`;
+    return `
+      <div class="height-compare-card">
+        <div class="height-compare-card-top">
+          <img class="height-chip-sprite" src="${e.sprite}" alt="${e.name}"/>
+          <span class="height-compare-card-name">${e.name}${e.isCurrent ? ' (current)' : ''}</span>
+          <span class="height-compare-card-val">${heightLabel}</span>
+          ${e.isCurrent ? '' : `<button class="height-remove-x" onclick="removeCompareEntry('${e.uid}')">×</button>`}
+        </div>
+        ${scaleBlock}
+      </div>`;
+  }).join('');
+
+  document.getElementById('heightSidebar').innerHTML = `
+    <div class="section-header">Compare To</div>
+    <div class="height-trainer-toggle-row">
+      <label>👤 Trainer</label>
+      <button class="height-checkbox-btn ${heightCompare.includeTrainer ? 'on' : ''}" onclick="toggleTrainerCompare()"></button>
+    </div>
+    ${heightCompare.includeTrainer ? (unit === 'imperial' ? `
+      <div class="height-trainer-input-row">
+        <input type="number" min="1" max="8" value="${trainerFeet}"
+          onchange="updateTrainerHeightFromModal((+this.value)*12 + ${trainerRemIn})"/>
+        <span>ft</span>
+        <input type="number" min="0" max="11" value="${trainerRemIn}"
+          onchange="updateTrainerHeightFromModal(${trainerFeet*12} + (+this.value))"/>
+        <span>in</span>
+      </div>` : `
+      <div class="height-trainer-input-row">
+        <input type="number" min="90" max="245" value="${Math.round(trainerInches*2.54)}"
+          onchange="updateTrainerHeightFromModalCm(this.value)"/>
+        <span>cm</span>
+      </div>`) : ''}
+
+    <div class="section-header">Add Pokémon</div>
+    <div class="height-add-row">
+      <input type="text" id="heightAddInput" placeholder="Name or #..."
+        onkeydown="if(event.key==='Enter') addComparePokemon()"/>
+      <button class="height-add-btn" onclick="addComparePokemon()">ADD</button>
+    </div>
+    <div class="height-add-error" id="heightAddError"></div>
+
+    <div class="section-header">In Comparison</div>
+    <div class="height-compare-list">${compareCards}</div>
+
+    <div class="height-scale-note">
+      Scale models the Scarlet/Violet individual size stat (1–255, 128 = average). Approximate, for visualization only.
+    </div>
+  `;
+
+  // ── Chart ──
+  if (rows.length === 0) {
+    document.getElementById('heightChart').innerHTML = '<div class="height-empty-chart">Add a Pokémon or<br/>enable the trainer<br/>to compare heights.</div>';
+    return;
+  }
+
+  const maxHeightM = Math.max(...rows.map(r => r.effHeightM), 0.1);
+  let chartMaxM, majorStepM, minorStepM;
+  if (unit === 'imperial') {
+    const maxFeet = Math.max(1, Math.ceil(maxHeightM / 0.3048 * 1.15));
+    chartMaxM = maxFeet * 0.3048;
+    majorStepM = 0.3048;     // 1 ft
+    minorStepM = 0.0254;     // 1 in
+  } else {
+    const headroom = maxHeightM * 1.15;
+    majorStepM = headroom <= 3 ? 0.5 : 1;
+    minorStepM = headroom <= 3 ? 0.1 : 0.2;
+    chartMaxM = Math.max(majorStepM, Math.ceil(headroom / majorStepM) * majorStepM);
+  }
+
+  const CHART_PX = 420; // fixed pixel height of the track row (silhouettes area)
+  const pxPerMeter = CHART_PX / chartMaxM;
+
+  // Ruler ticks
+  let ticksHtml = '';
+  const tickCount = Math.round(chartMaxM / minorStepM);
+  for (let i = 0; i <= tickCount; i++) {
+    const m = i * minorStepM;
+    if (m > chartMaxM + 1e-6) break;
+    const isMajor = Math.abs((m / majorStepM) - Math.round(m / majorStepM)) < 1e-6;
+    const bottomPx = m * pxPerMeter;
+    ticksHtml += `<div class="height-ruler-tick ${isMajor?'major':''}" style="bottom:${bottomPx}px"></div>`;
+    if (isMajor) {
+      const label = unit === 'imperial' ? `${Math.round(m/0.3048)}'` : `${m.toFixed(m<1?1:0)}m`;
+      ticksHtml += `<div class="height-ruler-label" style="bottom:${bottomPx}px">${label}</div>`;
+    }
+  }
+
+  const slotsHtml = rows.map(r => {
+    const px = Math.max(2, r.effHeightM * pxPerMeter);
+    if (r.kind === 'trainer') {
+      return `<div class="height-col-slot">${buildPersonSilhouetteSVG(px)}</div>`;
+    }
+    return `<div class="height-col-slot">
+      <img class="height-silhouette ${r.isCurrent?'is-current':''}" src="${r.sprite}" alt="${r.name}" style="height:${px}px"/>
+    </div>`;
+  }).join('');
+
+  const footersHtml = rows.map(r => {
+    if (r.kind === 'trainer') {
+      return `<div class="height-column">
+        <div class="height-col-footer">
+          <div class="height-col-icon">👤</div>
+          <div class="height-col-name">Trainer</div>
+          <div class="height-col-value">${formatHeight(r.effHeightM)}</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="height-column">
+      <div class="height-col-footer">
+        <div class="height-col-icon">${r.isCurrent ? '⭐' : ''}</div>
+        <div class="height-col-name">${r.name}</div>
+        <div class="height-col-value">${formatHeight(r.effHeightM)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('heightChart').innerHTML = `
+    <div class="height-track-row" style="height:${CHART_PX}px">
+      <div class="height-ruler">${ticksHtml}</div>
+      <div class="height-ground-line"></div>
+      <div class="height-silhouettes-row">${slotsHtml}</div>
+    </div>
+    <div class="height-footer-row">${footersHtml}</div>
+  `;
 }
 
 // ── CRY PLAYER ──
@@ -2339,6 +3069,23 @@ function renderSettings() {
       </div>
     </div>
 
+    <div class="settings-section">
+      <div class="section-header">Height Comparison</div>
+
+      <div class="settings-row">
+        <div class="settings-label-group">
+          <label>Trainer Height</label>
+          <span class="settings-sublabel">Used as the default comparison figure</span>
+        </div>
+        <div class="settings-control">
+          <input type="range" class="settings-slider" min="48" max="84" step="1"
+            value="${settings.trainerHeightIn}"
+            oninput="settings.trainerHeightIn=+this.value; document.getElementById('trainerHeightVal').textContent=formatFeetInches(this.value); syncTrainerEntryHeight()"/>
+          <span class="settings-value-badge" id="trainerHeightVal">${formatFeetInches(settings.trainerHeightIn)}</span>
+        </div>
+      </div>
+    </div>
+
     <div style="text-align:right;margin-top:8px">
       <button class="settings-reset-btn" onclick="settings={...SETTINGS_DEFAULTS}; applySettings(); renderSettings()">↺ Reset to Defaults</button>
     </div>
@@ -2376,10 +3123,14 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.activeElement !== document.getElementById('searchInput')) {
     document.getElementById('searchInput').focus();
   }
+  if (e.key === 'Escape' && document.getElementById('heightModalOverlay')?.classList.contains('open')) {
+    closeHeightModal();
+  }
 });
 
 // Apply content screen font scale on init
 document.getElementById('contentScreen').style.fontSize = settings.fontSize + 'em';
+applySettings();
 
 // Start with a random fan-favourite
 loadPokemon('pikachu');
