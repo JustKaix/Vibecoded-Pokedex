@@ -815,13 +815,7 @@
   .type-stellar  { background: #40B5A8; color: #fff; }
   .type-unknown  { background: #68A090; color: #fff; }
 
-  /* STAT COLORS */
-  .stat-hp     { background: linear-gradient(to right, #FF5959, #FF0000); }
-  .stat-atk    { background: linear-gradient(to right, #F5AC78, #F08030); }
-  .stat-def    { background: linear-gradient(to right, #FAE078, #F8D030); }
-  .stat-spatk  { background: linear-gradient(to right, #9DB7F5, #6890F0); }
-  .stat-spdef  { background: linear-gradient(to right, #A7DB8D, #78C850); }
-  .stat-spd    { background: linear-gradient(to right, #FA92B2, #F85888); }
+  /* STAT COLORS — computed dynamically by statColor() */
 
   /* GAME BADGE COLORS */
   .game-red, .game-firered { background: #FF6666; color: #fff; }
@@ -897,38 +891,53 @@
   .content-screen::-webkit-scrollbar-track { background: #f0f0f0; }
   .content-screen::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 
-  /* WEAKNESSES */
-  .weakness-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
+  /* WEAKNESSES — PokemonDB style */
+  .weakness-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
   }
-  .weakness-chip {
+  .weakness-table td {
+    padding: 0;
+    text-align: center;
+    width: calc(100% / 9);
+  }
+  .wk-type-cell {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 4px 8px;
-    border-radius: 8px;
+    gap: 3px;
+    padding: 3px 2px;
+  }
+  .wk-type-pill {
+    display: block;
+    width: 100%;
+    padding: 3px 2px;
+    border-radius: 4px;
     font-family: var(--font-pixel);
-    font-size: 4.5px;
+    font-size: 4px;
     text-transform: uppercase;
-    border: 1px solid rgba(0,0,0,0.15);
-    min-width: 44px;
+    text-align: center;
+    letter-spacing: 0.2px;
+    line-height: 1.4;
+  }
+  .wk-mult {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: #FFD700;
+    border-radius: 3px;
+    padding: 1px 4px;
+    min-width: 18px;
     text-align: center;
   }
-  .weakness-chip .mult {
-    font-size: 8px;
-    font-family: var(--font-mono);
-    font-weight: 700;
-  }
-  .mult-4x { background: #FF3030; color:#fff; }
-  .mult-2x { background: #FF7744; color:#fff; }
-  .mult-1x { display: none; }
-  .mult-half { background: #66BB55; color:#fff; }
-  .mult-quarter { background: #2299AA; color:#fff; }
-  .mult-0x { background: #444; color:#fff; }
+  .wk-mult.wk-4x   { background: #228B22; }
+  .wk-mult.wk-2x   { background: #228B22; }
+  .wk-mult.wk-1x   { visibility: hidden; }
+  .wk-mult.wk-half { background: #CC0000; }
+  .wk-mult.wk-qtr  { background: #660000; }
+  .wk-mult.wk-0x   { background: #111111; }
 
   /* ABILITIES */
   .ability-list {
@@ -1893,38 +1902,44 @@ function computeWeaknesses(types, abilityName = null) {
 function weaknessHtml(weaknesses, activeAbility) {
   const allTypes = ['normal','fire','water','electric','grass','ice','fighting','poison','ground',
                     'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
-  const groups = { 4: [], 2: [], 0.5: [], 0.25: [], 0: [] };
-  for (const t of allTypes) {
-    const m = weaknesses[t];
-    if (m >= 4) groups[4].push(t);
-    else if (m >= 2) groups[2].push(t);
-    else if (m > 0 && m <= 0.25) groups[0.25].push(t);
-    else if (m > 0 && m <= 0.5) groups[0.5].push(t);
-    else if (m === 0) groups[0].push(t);
+
+  function multLabel(m) {
+    if (m === 0)   return '0';
+    if (m <= 0.25) return '¼';
+    if (m <= 0.5)  return '½';
+    if (m < 2)     return '1';
+    if (m < 4)     return '2';
+    return '4';
+  }
+  function multCls(m) {
+    if (m === 0)   return 'wk-0x';
+    if (m <= 0.25) return 'wk-qtr';
+    if (m <= 0.5)  return 'wk-half';
+    if (m < 2)     return 'wk-1x';
+    if (m < 4)     return 'wk-2x';
+    return 'wk-4x';
+  }
+  const abbr = {
+    normal:'NOR', fire:'FIR', water:'WAT', electric:'ELE', grass:'GRA', ice:'ICE',
+    fighting:'FIG', poison:'POI', ground:'GRO', flying:'FLY', psychic:'PSY', bug:'BUG',
+    rock:'ROC', ghost:'GHO', dragon:'DRA', dark:'DAR', steel:'STE', fairy:'FAI'
+  };
+
+  const row1 = allTypes.slice(0, 9);
+  const row2 = allTypes.slice(9);
+
+  function buildRow(types) {
+    return '<tr>' + types.map(t => {
+      const m = weaknesses[t];
+      return `<td><div class="wk-type-cell"><span class="wk-type-pill type-${t}">${abbr[t]}</span><span class="wk-mult ${multCls(m)}">${multLabel(m)}</span></div></td>`;
+    }).join('') + '</tr>';
   }
 
   const abilityNote = activeAbility
     ? `<div class="weakness-note">★ Showing weaknesses with <b style="color:var(--red-dark)">${activeAbility.replace(/-/g,' ')}</b> active</div>`
     : `<div class="weakness-note">Click an ability below to see how it changes weaknesses</div>`;
 
-  let html = '';
-  const labels = { 4: '4×', 2: '2×', 0.5: '½×', 0.25: '¼×', 0: '0×' };
-  const multClass = { 4: 'mult-4x', 2: 'mult-2x', 0.5: 'mult-half', 0.25: 'mult-quarter', 0: 'mult-0x' };
-
-  for (const [mult, types] of Object.entries(groups)) {
-    if (types.length === 0) continue;
-    html += `<div class="weakness-grid">`;
-    for (const t of types) {
-      html += `<div class="weakness-chip type-${t} ${multClass[mult]}">
-        <span class="mult">${labels[mult]}</span>
-        <span>${t}</span>
-      </div>`;
-    }
-    html += `</div>`;
-  }
-
-  if (!html) html = `<div class="no-data" style="padding:8px">No notable weaknesses</div>`;
-  return html + abilityNote;
+  return `<table class="weakness-table"><tbody>${buildRow(row1)}${buildRow(row2)}</tbody></table>` + abilityNote;
 }
 
 let currentAbilityFilter = null;
@@ -2168,6 +2183,37 @@ function getEnglishDesc(species) {
 }
 
 // ── STATS ──
+// ── STAT BAR COLOR ──
+// Gradient stops: value -> [r, g, b]
+function statColor(val) {
+  const stops = [
+    [0,   [139,  0,   0]],  // dark red
+    [30,  [200,  0,   0]],  // red
+    [45,  [255, 140,  0]],  // orange
+    [60,  [255, 220,  0]],  // yellow
+    [80,  [160, 230,  0]],  // lime
+    [100, [120, 210,  0]],  // lime
+    [120, [ 0,  160,  60]], // emerald
+    [140, [ 0,  140,  50]], // emerald
+    [150, [ 0,  194, 184]], // #00C2B8
+  ];
+  // Clamp
+  if (val <= stops[0][0]) return `rgb(${stops[0][1].join(',')})`;
+  if (val >= stops[stops.length-1][0]) return `rgb(${stops[stops.length-1][1].join(',')})`;
+  // Find surrounding stops and lerp
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [v0, c0] = stops[i];
+    const [v1, c1] = stops[i+1];
+    if (val >= v0 && val <= v1) {
+      const t = (val - v0) / (v1 - v0);
+      const r = Math.round(c0[0] + t * (c1[0] - c0[0]));
+      const g = Math.round(c0[1] + t * (c1[1] - c0[1]));
+      const b = Math.round(c0[2] + t * (c1[2] - c0[2]));
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+}
+
 async function renderStats() {
   const p = currentPokemon;
   if (!p) return;
@@ -2176,10 +2222,7 @@ async function renderStats() {
     'hp':'HP','attack':'Attack','defense':'Defense',
     'special-attack':'Sp. Atk','special-defense':'Sp. Def','speed':'Speed'
   };
-  const statClasses = {
-    'hp':'stat-hp','attack':'stat-atk','defense':'stat-def',
-    'special-attack':'stat-spatk','special-defense':'stat-spdef','speed':'stat-spd'
-  };
+  const statClasses = {};
 
   let total = 0;
   const rows = p.stats.map(s => {
@@ -2188,13 +2231,13 @@ async function renderStats() {
     const pct = Math.min(100, (base / 255) * 100);
     const min = calcMin(base, s.stat.name);
     const max = calcMax(base, s.stat.name);
-    const cls = statClasses[s.stat.name] || '';
+    const color = statColor(base);
     return `
       <div class="stat-row">
         <span class="stat-name">${statNames[s.stat.name] || s.stat.name}</span>
         <span class="stat-val">${base}</span>
         <div class="stat-bar-bg">
-          <div class="stat-bar ${cls}" style="width:${pct}%"></div>
+          <div class="stat-bar" style="width:${pct}%;background:${color}"></div>
         </div>
         <span class="stat-min-max">${min} – ${max}</span>
       </div>
