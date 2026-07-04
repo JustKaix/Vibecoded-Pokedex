@@ -1,0 +1,3210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Pokédex</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23fff' stroke='%23222' stroke-width='6'/%3E%3Cpath d='M4 50a46 46 0 0 1 92 0z' fill='%23e3350d' stroke='%23222' stroke-width='6'/%3E%3Cpath d='M4 50h30m32 0h30' stroke='%23222' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='16' fill='%23fff' stroke='%23222' stroke-width='6'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23fff' stroke='%23222' stroke-width='5'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --red: #CC0000;
+    --red-dark: #990000;
+    --red-light: #E83333;
+    --red-shine: #FF4444;
+    --plastic-dark: #1C1C1C;
+    --plastic-mid: #2D2D2D;
+    --screen-bg: #0A1628;
+    --screen-green: #9BBB35;
+    --blue-screen: #1A3A5C;
+    --blue-light: #4A90D9;
+    --yellow: #FFD700;
+    --green-led: #33FF66;
+    --white-plastic: #F0F0F0;
+    --hinge: #888;
+    --font-pixel: 'Press Start 2P', monospace;
+    --font-mono: 'Roboto Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  html, body {
+    min-height: 100%;
+  }
+
+  body {
+    background: radial-gradient(ellipse at top, #1a1a2e 0%, #0d0d1a 100%);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    font-family: var(--font-body);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* ── DEVICE SHELL (mobile: stacked column, fluid width) ── */
+  .pokedex {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 460px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    filter: drop-shadow(0 12px 30px rgba(0,0,0,0.6));
+  }
+
+  /* TOP (was left) PANEL */
+  .left-panel {
+    background: linear-gradient(160deg, var(--red-shine) 0%, var(--red) 40%, var(--red-dark) 100%);
+    border-radius: 0;
+    padding: 16px 16px 14px 16px;
+    width: 100%;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow:
+      inset 2px 2px 6px rgba(255,255,255,0.2),
+      inset -2px -2px 8px rgba(0,0,0,0.4);
+    border-top: 3px solid var(--red-shine);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP LIGHTS ROW */
+  .lights-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .big-light {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #6AF, #1A6FC4);
+    border: 3px solid #0a3060;
+    box-shadow:
+      0 0 0 3px #ddd,
+      0 0 0 5px #999,
+      0 0 10px rgba(70,160,255,0.6),
+      inset 0 2px 4px rgba(255,255,255,0.4);
+    flex-shrink: 0;
+  }
+
+  .small-lights {
+    display: flex; gap: 6px; margin-left: 4px;
+  }
+  .dot {
+    width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.3), 0 0 6px currentColor;
+  }
+  .dot-red { background: #FF4444; color: #FF4444; }
+  .dot-yellow { background: #FFD700; color: #FFD700; }
+  .dot-green { background: #33DD66; color: #33DD66; }
+
+  .divider-line {
+    height: 3px;
+    background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.1));
+    border-radius: 2px;
+    margin-bottom: 12px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* MAIN SCREEN */
+  .screen-bezel {
+    background: #111;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 12px;
+    box-shadow:
+      inset 0 4px 8px rgba(0,0,0,0.8),
+      0 2px 4px rgba(0,0,0,0.5);
+    border: 2px solid #222;
+  }
+
+  .screen {
+    background: var(--screen-bg);
+    border-radius: 6px;
+    height: 44vw;
+    max-height: 190px;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #0a2040;
+  }
+
+  .screen::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.015) 2px,
+      rgba(255,255,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .screen-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pokemon-sprite {
+    width: 108px;
+    height: 108px;
+    max-width: 40%;
+    max-height: 60%;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    transition: all 0.3s ease;
+  }
+
+  .screen-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(100,180,255,0.4);
+  }
+  .screen-placeholder svg { opacity: 0.3; width: 46px; height: 46px; }
+  .screen-placeholder p {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    color: rgba(100,180,255,0.5);
+    text-align: center;
+    line-height: 2;
+  }
+
+  .pokemon-name-screen {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: var(--screen-green);
+    text-shadow: 0 0 8px rgba(155,187,53,0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .shiny-toggle {
+    position: absolute;
+    bottom: 6px;
+    right: 8px;
+    background: rgba(255,215,0,0.15);
+    border: 1px solid rgba(255,215,0,0.4);
+    color: #FFD700;
+    font-size: 9px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-pixel);
+    transition: all 0.2s;
+    z-index: 20;
+  }
+  .shiny-toggle:hover, .shiny-toggle:active { background: rgba(255,215,0,0.3); }
+  .shiny-toggle.active { background: rgba(255,215,0,0.5); color: #fff; }
+
+  .type-badges {
+    display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    position: absolute;
+    bottom: 6px; left: 8px;
+  }
+
+  .type-badge {
+    font-family: var(--font-pixel);
+    font-size: 5px;
+    padding: 4px 7px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  /* SEARCH AREA */
+  .search-area {
+    margin-bottom: 10px;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: #111;
+    border-radius: 8px;
+    padding: 10px 10px;
+    border: 2px solid #333;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+  }
+
+  .search-box input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--screen-green);
+    font-family: var(--font-pixel);
+    font-size: 8px;
+    flex: 1;
+    caret-color: var(--screen-green);
+    min-width: 0;
+  }
+
+  .search-box input::placeholder {
+    color: rgba(155,187,53,0.3);
+  }
+
+  .search-btn {
+    background: var(--red-dark);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .search-btn:active { background: var(--red-light); }
+
+  /* BUTTONS ROW — horizontally scrollable on narrow screens */
+  .btn-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .btn-row::-webkit-scrollbar { display: none; }
+
+  .poke-btn {
+    flex: 1 0 auto;
+    min-width: 58px;
+    background: linear-gradient(to bottom, #444, #222);
+    border: none;
+    border-radius: 6px;
+    color: #ccc;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    padding: 10px 6px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #111, 0 4px 6px rgba(0,0,0,0.4);
+    transition: all 0.1s;
+    text-transform: uppercase;
+  }
+  .poke-btn:active { background: linear-gradient(to bottom, #555, #333); transform: translateY(2px); box-shadow: 0 1px 0 #111; }
+  .poke-btn.active-btn {
+    background: linear-gradient(to bottom, var(--red-light), var(--red-dark));
+    color: white;
+    box-shadow: 0 3px 0 #660000, 0 4px 6px rgba(0,0,0,0.4);
+  }
+
+  /* Bottom row: random / id / speaker */
+  .bottom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .random-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none;
+    border-radius: 6px;
+    color: #333;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    padding: 10px 10px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #AA6600;
+    transition: all 0.1s;
+    flex: 1;
+  }
+  .random-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #AA6600; filter: brightness(1.1); }
+
+  .mini-screen {
+    background: #0a1a0a;
+    border-radius: 4px;
+    padding: 6px 8px;
+    border: 2px solid #222;
+    text-align: center;
+    min-width: 54px;
+    flex-shrink: 0;
+  }
+  .mini-screen span {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    color: var(--screen-green);
+  }
+
+  /* Speaker grille — hidden on very narrow screens to save space */
+  .speaker {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 0 0 40px;
+    align-items: flex-end;
+  }
+  .speaker-line {
+    height: 2px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 1px;
+    width: 100%;
+    max-width: 40px;
+  }
+  @media (max-width: 380px) {
+    .speaker { display: none; }
+  }
+
+  /* BOTTOM (was right) PANEL */
+  .right-panel {
+    background: linear-gradient(160deg, #EEE 0%, #DDD 50%, #CCC 100%);
+    border-radius: 0;
+    padding: 14px 14px 20px 14px;
+    flex: 1;
+    min-width: 0;
+    box-shadow:
+      inset 0 4px 8px rgba(0,0,0,0.15);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TAB BAR — horizontally scrollable */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+
+  .tab {
+    background: linear-gradient(to bottom, #ccc, #bbb);
+    border: none;
+    border-radius: 6px 6px 0 0;
+    padding: 9px 10px;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 -1px 0 #999 inset;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .tab:active { background: linear-gradient(to bottom, #ddd, #ccc); color: #333; }
+  .tab.active {
+    background: linear-gradient(to bottom, #fff, #f5f5f5);
+    color: var(--red-dark);
+    box-shadow: 0 2px 0 #fff inset;
+  }
+
+  /* CONTENT AREA */
+  .content-screen {
+    background: #fff;
+    border-radius: 0 8px 8px 8px;
+    padding: 14px 12px;
+    border: 2px solid #bbb;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+    overflow-y: visible;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    gap: 16px;
+    color: #999;
+    text-align: center;
+    padding: 20px 10px;
+  }
+  .empty-state h2 {
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    color: #ccc;
+  }
+  .empty-state p {
+    font-size: 13px;
+    color: #aaa;
+    text-align: center;
+  }
+
+  /* LOADING */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 180px;
+    gap: 12px;
+  }
+  .pokeball-spin {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, var(--red) 50%, white 50%);
+    border: 3px solid #333;
+    position: relative;
+    animation: spin 0.8s linear infinite;
+  }
+  .pokeball-spin::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%,-50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #333;
+  }
+  .pokeball-spin::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: calc(50% - 1.5px);
+    height: 3px;
+    background: #333;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: #888;
+  }
+
+  /* INFO TAB */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .info-card {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .info-card label {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #999;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .info-card value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: block;
+  }
+
+  .info-card.height-trigger {
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .info-card.height-trigger:active {
+    background: #fff5f5;
+    border-color: var(--red);
+  }
+  .info-card.height-trigger:active value { color: var(--red-dark); }
+  .height-trigger-hint {
+    display: block;
+    font-size: 10px;
+    color: #bbb;
+    margin-top: 2px;
+    font-family: var(--font-body);
+  }
+
+  .pokedex-num {
+    font-family: var(--font-pixel);
+    font-size: 9px;
+    color: var(--red-dark);
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .desc-box {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-left: 3px solid var(--red);
+  }
+  .desc-box p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  /* STATS TAB */
+  .stat-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-bottom: 10px;
+  }
+  .stat-name {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #777;
+    width: 62px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    width: 30px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .stat-bar-bg {
+    flex: 1 1 100px;
+    height: 10px;
+    background: #e8e8e8;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .stat-bar {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.6s ease;
+  }
+  .stat-min-max {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #aaa;
+    width: 100%;
+    text-align: right;
+    flex-shrink: 0;
+    order: 5;
+    margin-top: -4px;
+  }
+  .stat-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #aaa;
+  }
+  .stat-legend span { font-family: var(--font-mono); }
+
+  /* EVO TAB */
+  .evo-chain {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .evo-mon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .evo-mon:active { border-color: var(--red); background: rgba(204,0,0,0.05); }
+  .evo-mon.current { border-color: var(--red); background: rgba(204,0,0,0.1); }
+  .evo-mon img { width: 62px; height: 62px; image-rendering: pixelated; }
+  .evo-mon span {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #555;
+    text-transform: capitalize;
+    text-align: center;
+  }
+  .evo-arrow {
+    color: #ccc;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .evo-arrow small {
+    font-family: var(--font-pixel);
+    font-size: 4.5px;
+    color: #aaa;
+    text-align: center;
+    max-width: 60px;
+    line-height: 1.4;
+  }
+
+  .forms-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+  }
+  .form-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.2s;
+    min-width: 72px;
+  }
+  .form-card:active { border-color: var(--blue-light); background: rgba(74,144,217,0.05); }
+  .form-card.active-form { border-color: var(--blue-light); background: rgba(74,144,217,0.1); }
+  .form-card img { width: 54px; height: 54px; image-rendering: pixelated; }
+  .form-card span {
+    font-family: var(--font-pixel);
+    font-size: 4.5px;
+    color: #666;
+    text-align: center;
+    text-transform: capitalize;
+    line-height: 1.4;
+  }
+
+  /* GAMES TAB */
+  .games-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .game-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    text-transform: capitalize;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  /* MOVES TAB */
+  .moves-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .moves-controls label {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #777;
+  }
+  .moves-controls select {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #333;
+    cursor: pointer;
+  }
+
+  .moves-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .moves-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .moves-table th {
+    font-family: var(--font-pixel);
+    font-size: 5px;
+    color: #999;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 8px;
+    border-bottom: 2px solid #e0e0e0;
+    background: #f9f9f9;
+    position: sticky;
+    top: 0;
+  }
+  .moves-table td {
+    padding: 8px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #444;
+    font-family: var(--font-mono);
+  }
+  .moves-table tr:active td { background: #f5f5f5; }
+  .moves-table td:first-child { text-transform: capitalize; font-weight: 600; white-space: nowrap; }
+  .move-type-pill {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 9px;
+    font-family: var(--font-pixel);
+    font-size: 4.5px;
+  }
+  .learn-method {
+    display: inline-block;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: #e8e8e8;
+    font-size: 10px;
+    color: #666;
+    white-space: nowrap;
+  }
+
+  /* TYPE COLORS */
+  .type-normal   { background: #A8A878; color: #fff; }
+  .type-fire     { background: #F08030; color: #fff; }
+  .type-water    { background: #6890F0; color: #fff; }
+  .type-electric { background: #F8D030; color: #333; }
+  .type-grass    { background: #78C850; color: #fff; }
+  .type-ice      { background: #98D8D8; color: #333; }
+  .type-fighting { background: #C03028; color: #fff; }
+  .type-poison   { background: #A040A0; color: #fff; }
+  .type-ground   { background: #E0C068; color: #333; }
+  .type-flying   { background: #A890F0; color: #fff; }
+  .type-psychic  { background: #F85888; color: #fff; }
+  .type-bug      { background: #A8B820; color: #fff; }
+  .type-rock     { background: #B8A038; color: #fff; }
+  .type-ghost    { background: #705898; color: #fff; }
+  .type-dragon   { background: #7038F8; color: #fff; }
+  .type-dark     { background: #705848; color: #fff; }
+  .type-steel    { background: #B8B8D0; color: #333; }
+  .type-fairy    { background: #EE99AC; color: #333; }
+  .type-stellar  { background: #40B5A8; color: #fff; }
+  .type-unknown  { background: #68A090; color: #fff; }
+
+  /* GAME BADGE COLORS */
+  .game-red, .game-firered { background: #FF6666; color: #fff; }
+  .game-blue, .game-sapphire { background: #6699FF; color: #fff; }
+  .game-yellow { background: #FFE066; color: #333; }
+  .game-gold, .game-heartgold { background: #FFD700; color: #333; }
+  .game-silver, .game-soulsilver { background: #C0C0C0; color: #333; }
+  .game-crystal { background: #88CCFF; color: #333; }
+  .game-ruby { background: #FF4444; color: #fff; }
+  .game-emerald { background: #44BB44; color: #fff; }
+  .game-leafgreen { background: #66DD44; color: #fff; }
+  .game-diamond, .game-brilliantdiamond { background: #6699FF; color: #fff; }
+  .game-pearl, .game-shiningpearl { background: #FFAACC; color: #333; }
+  .game-platinum { background: #AAAAAA; color: #fff; }
+  .game-black, .game-black-2 { background: #333333; color: #fff; }
+  .game-white, .game-white-2 { background: #EEEEEE; color: #333; border: 1px solid #ccc; }
+  .game-x { background: #5588FF; color: #fff; }
+  .game-y { background: #FF5588; color: #fff; }
+  .game-omegaruby { background: #CC2222; color: #fff; }
+  .game-alphasapphire { background: #2244CC; color: #fff; }
+  .game-sun, .game-ultrasun { background: #FF8800; color: #fff; }
+  .game-moon, .game-ultramoon { background: #7744AA; color: #fff; }
+  .game-sword { background: #5588FF; color: #fff; }
+  .game-shield { background: #CC4444; color: #fff; }
+  .game-scarlet { background: #CC3300; color: #fff; }
+  .game-violet { background: #6633CC; color: #fff; }
+
+  .error-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 180px;
+    gap: 12px;
+  }
+  .error-msg p {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: var(--red-dark);
+    text-align: center;
+  }
+
+  .section-header {
+    font-family: var(--font-pixel);
+    font-size: 7px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header::before {
+    content: '';
+    width: 4px; height: 14px;
+    background: var(--red);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .no-data {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    color: #bbb;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* WEAKNESSES */
+  .weakness-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -4px 6px;
+    padding: 0 4px;
+  }
+  .weakness-table {
+    border-collapse: collapse;
+    margin-bottom: 6px;
+    min-width: 380px;
+    width: 100%;
+  }
+  .weakness-table td {
+    padding: 0;
+    text-align: center;
+    width: calc(100% / 9);
+  }
+  .wk-type-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 2px;
+  }
+  .wk-type-pill {
+    display: block;
+    width: 100%;
+    padding: 3px 2px;
+    border-radius: 4px;
+    font-family: var(--font-pixel);
+    font-size: 4px;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 0.2px;
+    line-height: 1.4;
+  }
+  .wk-mult {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: #FFD700;
+    border-radius: 3px;
+    padding: 1px 4px;
+    min-width: 18px;
+    text-align: center;
+  }
+  .wk-mult.wk-4x   { background: #228B22; }
+  .wk-mult.wk-2x   { background: #228B22; }
+  .wk-mult.wk-1x   { visibility: hidden; }
+  .wk-mult.wk-half { background: #CC0000; }
+  .wk-mult.wk-qtr  { background: #660000; }
+  .wk-mult.wk-0x   { background: #111111; }
+
+  /* ABILITIES */
+  .ability-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ability-card {
+    background: #f8f8f8;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .ability-card:active { border-color: var(--red); background: #fff5f5; }
+  .ability-card.ability-active { border-color: var(--red); background: #fff0f0; box-shadow: 0 0 0 2px rgba(204,0,0,0.15); }
+  .ability-card.ability-hidden { border-style: dashed; opacity: 0.8; }
+  .ability-card .ability-name {
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    color: var(--red-dark);
+    text-transform: capitalize;
+    margin-bottom: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .ability-tag {
+    font-size: 4px;
+    background: #ddd;
+    color: #777;
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+  .ability-tag.hidden-tag { background: #e8e0ff; color: #7744aa; }
+  .ability-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+  }
+  .ability-affects-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 9px;
+    font-family: var(--font-pixel);
+    font-size: 4.5px;
+    background: rgba(204,0,0,0.1);
+    color: var(--red-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .weakness-note {
+    font-family: var(--font-pixel);
+    font-size: 5px;
+    color: #aaa;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  /* ── CRY PLAYER ── */
+  .cry-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid #eee;
+  }
+  .cry-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .cry-play-btn {
+    background: linear-gradient(to bottom, var(--red-light), var(--red-dark));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: var(--font-pixel);
+    font-size: 6.5px;
+    padding: 10px 14px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #660000;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .cry-play-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #660000; filter: brightness(1.1); }
+  .cry-play-btn.playing { background: linear-gradient(to bottom, #4a90d9, #1a5a9c); box-shadow: 0 3px 0 #0a3060; }
+  .cry-gen-select {
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #333;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+  }
+  .cry-status {
+    font-family: var(--font-pixel);
+    font-size: 5px;
+    color: #aaa;
+    text-align: center;
+    margin-top: 6px;
+    min-height: 12px;
+    word-break: break-all;
+  }
+  .cry-waveform {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 20px;
+  }
+  .cry-waveform span {
+    display: inline-block;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--red);
+    opacity: 0.3;
+    transition: height 0.1s, opacity 0.1s;
+  }
+  .cry-waveform.active span {
+    opacity: 1;
+    animation: wave 0.6s ease-in-out infinite alternate;
+  }
+  .cry-waveform.active span:nth-child(2) { animation-delay: 0.1s; }
+  .cry-waveform.active span:nth-child(3) { animation-delay: 0.2s; }
+  .cry-waveform.active span:nth-child(4) { animation-delay: 0.15s; }
+  .cry-waveform.active span:nth-child(5) { animation-delay: 0.05s; }
+  @keyframes wave {
+    from { height: 4px; }
+    to   { height: 18px; }
+  }
+
+  /* ── SETTINGS TAB ── */
+  .settings-section {
+    margin-bottom: 24px;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 8px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .settings-row label {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #555;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .settings-row .settings-sublabel {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: #999;
+    margin-top: 2px;
+  }
+  .settings-label-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    width: 100%;
+  }
+  .settings-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 90px;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    cursor: pointer;
+  }
+  .settings-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--red);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .settings-value-badge {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: var(--red-dark);
+    background: rgba(204,0,0,0.08);
+    padding: 4px 7px;
+    border-radius: 4px;
+    min-width: 36px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .settings-toggle-group {
+    display: flex;
+    gap: 4px;
+  }
+  .settings-toggle-btn {
+    background: #e0e0e0;
+    border: none;
+    border-radius: 6px;
+    color: #666;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .settings-toggle-btn.active {
+    background: var(--red);
+    color: white;
+    box-shadow: 0 2px 0 var(--red-dark);
+  }
+  .settings-reset-btn {
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    color: #777;
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    padding: 9px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .settings-reset-btn:active { background: #ddd; color: #444; }
+
+  /* ── HEIGHT COMPARISON MODAL (fullscreen sheet on mobile) ── */
+  .height-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,8,16,0.78);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: stretch;
+    justify-content: stretch;
+    z-index: 500;
+  }
+  .height-modal-overlay.open { display: flex; }
+
+  .height-modal {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #f4f4f4 0%, #e6e6e6 100%);
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  .height-modal-header {
+    background: linear-gradient(to bottom, var(--red-shine), var(--red-dark));
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .height-modal-header h3 {
+    font-family: var(--font-pixel);
+    font-size: 10px;
+    color: white;
+    text-shadow: 0 2px 2px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
+  }
+  .height-modal-close {
+    background: rgba(0,0,0,0.25);
+    border: none;
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .height-modal-close:active { background: rgba(0,0,0,0.45); }
+
+  .height-modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* sidebar controls — stacked above chart on mobile */
+  .height-sidebar {
+    width: 100%;
+    flex-shrink: 0;
+    background: #fafafa;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 14px;
+  }
+  .height-sidebar .section-header { font-size: 6px; margin-bottom: 8px; }
+
+  .height-add-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .height-add-row input {
+    flex: 1;
+    min-width: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 9px 8px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline: none;
+  }
+  .height-add-row input:focus { border-color: var(--red); }
+  .height-add-btn {
+    background: linear-gradient(to bottom, var(--red-light), var(--red-dark));
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    padding: 0 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #660000;
+    flex-shrink: 0;
+  }
+  .height-add-btn:active { transform: translateY(2px); box-shadow: none; }
+  .height-add-error {
+    font-size: 11px;
+    color: var(--red-dark);
+    margin: -4px 0 10px 2px;
+    min-height: 12px;
+  }
+
+  .height-trainer-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .height-trainer-toggle-row label {
+    font-family: var(--font-pixel);
+    font-size: 5.5px;
+    color: #555;
+    text-transform: uppercase;
+  }
+  .height-checkbox-btn {
+    width: 40px; height: 22px;
+    border-radius: 11px;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .height-checkbox-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: left 0.2s;
+  }
+  .height-checkbox-btn.on { background: var(--red); }
+  .height-checkbox-btn.on::before { left: 20px; }
+
+  .height-trainer-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: -6px 0 14px 0;
+    padding: 0 2px;
+  }
+  .height-trainer-input-row input[type="number"] {
+    width: 56px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 7px 4px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 14px;
+  }
+  .height-trainer-input-row span { font-size: 11px; color: #888; }
+
+  .height-compare-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .height-compare-card {
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .height-compare-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .height-compare-card img.height-chip-sprite {
+    width: 30px; height: 30px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+  }
+  .height-compare-card-name {
+    flex: 1;
+    min-width: 60px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .height-compare-card-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #999;
+    flex-shrink: 0;
+  }
+  .height-remove-x {
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    padding: 4px 2px;
+  }
+  .height-remove-x:active { color: var(--red); }
+
+  .height-scale-row {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+  }
+  .height-scale-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .height-scale-row-label .scale-badge {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--red-dark);
+    background: rgba(204,0,0,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .height-scale-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #aac8e8, #ddd 50%, #e8b0a0);
+    outline: none;
+    cursor: pointer;
+  }
+  .height-scale-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--red);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .height-scale-unavailable {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e8e8e8;
+    font-size: 10px;
+    color: #bbb;
+    font-style: italic;
+  }
+  .height-scale-note {
+    font-size: 10px;
+    color: #aaa;
+    line-height: 1.4;
+    margin-top: 10px;
+  }
+
+  /* chart area */
+  .height-chart-area {
+    flex: 1;
+    padding: 16px 12px 16px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 340px;
+  }
+  .height-chart-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+  .height-chart {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .height-track-row {
+    position: relative;
+  }
+  .height-ruler {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 40px;
+  }
+  .height-ruler-tick {
+    position: absolute;
+    left: 24px;
+    width: 16px;
+    height: 1px;
+    background: #bbb;
+  }
+  .height-ruler-tick.major { background: #888; width: 16px; height: 2px; }
+  .height-ruler-label {
+    position: absolute;
+    left: 0;
+    width: 20px;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #888;
+    transform: translateY(-50%);
+  }
+  .height-ground-line {
+    position: absolute;
+    left: 40px; right: 0; bottom: 0;
+    height: 3px;
+    background: linear-gradient(to bottom, #999, #777);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .height-silhouettes-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    height: 100%;
+    padding-left: 56px;
+    padding-right: 12px;
+    position: relative;
+  }
+  .height-col-slot {
+    position: relative;
+    width: 80px;
+    height: 100%;
+    flex-shrink: 0;
+  }
+  .height-footer-row {
+    display: flex;
+    gap: 20px;
+    padding-left: 56px;
+    padding-right: 12px;
+    margin-top: 8px;
+  }
+  .height-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .height-silhouette {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: brightness(0);
+    opacity: 0.82;
+  }
+  .height-silhouette.is-current { opacity: 1; filter: brightness(0) saturate(100%); }
+  .height-silhouette-svg {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    fill: #2a2a2a;
+  }
+  .height-col-footer {
+    flex-shrink: 0;
+    text-align: center;
+    width: 100%;
+  }
+  .height-col-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #333;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .height-col-value {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--red-dark);
+    font-weight: 600;
+  }
+  .height-col-icon {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+  .height-empty-chart {
+    color: #aaa;
+    font-family: var(--font-pixel);
+    font-size: 6px;
+    text-align: center;
+    margin: auto;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="pokedex">
+  <!-- TOP PANEL (device screen, search, tab shortcuts) -->
+  <div class="left-panel">
+    <div class="lights-row">
+      <div class="big-light"></div>
+      <div class="small-lights">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+      </div>
+    </div>
+
+    <div class="divider-line"></div>
+
+    <!-- Screen -->
+    <div class="screen-bezel">
+      <div class="screen" id="mainScreen">
+        <div class="screen-content" id="screenContent">
+          <div class="screen-placeholder">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+              <circle cx="30" cy="30" r="28" stroke="#4AF" stroke-width="3"/>
+              <path d="M2 30 H58" stroke="#4AF" stroke-width="3"/>
+              <circle cx="30" cy="30" r="8" stroke="#4AF" stroke-width="3" fill="#0A1628"/>
+            </svg>
+            <p>SEARCH FOR A<br/>POKEMON TO BEGIN</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-area">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="NAME OR #..." maxlength="30" autocomplete="off" autocapitalize="off"
+          onkeydown="if(event.key==='Enter') searchPokemon()"/>
+        <button class="search-btn" onclick="searchPokemon()">GO</button>
+      </div>
+    </div>
+
+    <!-- Tabs shortcut buttons -->
+    <div class="btn-row">
+      <button class="poke-btn active-btn" id="tabBtnInfo" onclick="switchTab('info')">INFO</button>
+      <button class="poke-btn" id="tabBtnStats" onclick="switchTab('stats')">STATS</button>
+      <button class="poke-btn" id="tabBtnEvo" onclick="switchTab('evo')">EVO</button>
+      <button class="poke-btn" id="tabBtnGames" onclick="switchTab('games')">GAMES</button>
+      <button class="poke-btn" id="tabBtnMoves" onclick="switchTab('moves')">MOVES</button>
+      <button class="poke-btn" id="tabBtnSettings" onclick="switchTab('settings')">SET</button>
+    </div>
+
+    <div class="bottom-controls">
+      <button class="random-btn" onclick="randomPokemon()">★ RANDOM</button>
+      <div class="mini-screen">
+        <span id="idDisplay">---</span>
+      </div>
+      <div class="speaker">
+        <div class="speaker-line"></div>
+        <div class="speaker-line"></div>
+        <div class="speaker-line"></div>
+        <div class="speaker-line" style="width:70%"></div>
+        <div class="speaker-line" style="width:50%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM PANEL (tabs + content) -->
+  <div class="right-panel">
+    <div class="tab-bar">
+      <button class="tab active" id="tab-info" onclick="switchTab('info')">📋 INFO</button>
+      <button class="tab" id="tab-stats" onclick="switchTab('stats')">📊 STATS</button>
+      <button class="tab" id="tab-evo" onclick="switchTab('evo')">🔄 EVOLUTION</button>
+      <button class="tab" id="tab-games" onclick="switchTab('games')">🎮 GAMES</button>
+      <button class="tab" id="tab-moves" onclick="switchTab('moves')">⚔️ MOVES</button>
+      <button class="tab" id="tab-settings" onclick="switchTab('settings')">⚙️ SETTINGS</button>
+    </div>
+
+    <div class="content-screen" id="contentScreen">
+      <div class="empty-state">
+        <svg width="70" height="70" viewBox="0 0 80 80" fill="none" opacity="0.2">
+          <circle cx="40" cy="40" r="36" stroke="#CC0000" stroke-width="4"/>
+          <path d="M4 40 H76" stroke="#CC0000" stroke-width="4"/>
+          <circle cx="40" cy="40" r="12" stroke="#CC0000" stroke-width="4" fill="none"/>
+        </svg>
+        <h2>POKÉDEX</h2>
+        <p>Search for a Pokémon by name or number<br/>to view its data.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEIGHT COMPARISON MODAL -->
+<div class="height-modal-overlay" id="heightModalOverlay" onclick="if(event.target===this) closeHeightModal()">
+  <div class="height-modal">
+    <div class="height-modal-header">
+      <h3>📏 HEIGHT COMPARISON</h3>
+      <button class="height-modal-close" onclick="closeHeightModal()">×</button>
+    </div>
+    <div class="height-modal-body">
+      <div class="height-sidebar" id="heightSidebar"></div>
+      <div class="height-chart-area">
+        <div class="height-chart-scroll">
+          <div class="height-chart" id="heightChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://pokeapi.co/api/v2';
+
+// ── GEN 10 ROSTER (Legends: Z-A + future Gen 10 titles) ──
+// PokéAPI doesn't have Gen 10 game appearance data yet, so we maintain it here.
+// Add/remove Pokémon IDs per game as confirmed info arrives.
+const GEN10_GAMES = {
+  'legends-za': {
+    label: 'Legends: Z-A',
+    // Confirmed/expected returning Pokémon for Legends Z-A (Lumiose City, Kalos setting)
+    // Sourced from trailers & leaks as of mid-2025. IDs reference National Dex numbers.
+    ids: new Set([
+      // Kalos starters & evolutions
+      650,651,652,653,654,655,656,657,658,
+      // Pikachu line
+      25,26,
+      // Lucario line
+      447,448,
+      // Mega-capable Pokémon shown in trailers
+      130,6,282,248,460,445,
+      // Gengar line
+      92,93,94,
+      // Absol
+      359,
+      // Garchomp line
+      443,444,445,
+      // Sylveon & other Eeveelutions
+      133,134,135,136,196,197,470,471,700,
+      // Clefable line
+      35,36,
+      // Marill line
+      183,184,
+      // Ralts line
+      280,281,282,475,
+      // Bagon line
+      371,372,373,
+      // Riolu line
+      447,448,
+      // Goomy line
+      704,705,706,
+      // Hawlucha
+      701,
+      // Klefki
+      707,
+      // Talonflame line
+      661,662,663,
+      // Fletchling line
+      661,662,663,
+      // Litleo line
+      667,668,
+      // Helioptile line
+      694,695,
+      // Carbink
+      703,
+      // Diancie
+      719,
+      // Noibat line
+      714,715,
+      // Pancham line
+      674,675,
+      // Inkay line
+      686,687,
+      // Skrelp line
+      690,691,
+      // Clauncher line
+      692,693,
+      // Swirlix line
+      684,685,
+      // Spritzee line
+      682,683,
+      // Flabébé line
+      669,670,671,
+      // Scatterbug line
+      664,665,666,
+      // Honedge line
+      679,680,681,
+      // Phantump line
+      708,709,
+      // Pumpkaboo line
+      710,711,
+      // Bergmite line
+      712,713,
+      // Gogoat line
+      672,673,
+      // Furfrou
+      676,
+      // Meowstic line
+      677,678,
+      // Amaura line
+      698,699,
+      // Aurorus
+      699,
+      // Tyrunt line
+      696,697,
+      // Goodra line
+      704,705,706,
+    ])
+  }
+};
+
+// ── TYPE EFFECTIVENESS CHART ──
+// [attacker][defender] = multiplier
+const TYPE_CHART = (() => {
+  // All types in order
+  const T = ['normal','fire','water','electric','grass','ice','fighting','poison','ground',
+             'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+  // Effectiveness table: each row is attacker, each col is defender
+  // 0=immune, 0.5=resist, 2=super, 1=normal (omitted)
+  const chart = {};
+  const data = {
+    normal:   {rock:0.5, ghost:0, steel:0.5},
+    fire:     {fire:0.5, water:0.5, grass:2, ice:2, bug:2, rock:0.5, dragon:0.5, steel:2},
+    water:    {fire:2, water:0.5, grass:0.5, ground:2, rock:2, dragon:0.5},
+    electric: {water:2, electric:0.5, grass:0.5, ground:0, flying:2, dragon:0.5},
+    grass:    {fire:0.5, water:2, grass:0.5, poison:0.5, ground:2, flying:0.5, bug:0.5, rock:2, dragon:0.5, steel:0.5},
+    ice:      {fire:0.5, water:0.5, grass:2, ice:0.5, ground:2, flying:2, dragon:2, steel:0.5},
+    fighting: {normal:2, ice:2, poison:0.5, flying:0.5, psychic:0.5, bug:0.5, rock:2, ghost:0, dark:2, steel:2, fairy:0.5},
+    poison:   {grass:2, poison:0.5, ground:0.5, rock:0.5, ghost:0.5, steel:0, fairy:2},
+    ground:   {fire:2, electric:2, grass:0.5, poison:2, flying:0, bug:0.5, rock:2, steel:2},
+    flying:   {electric:0.5, grass:2, fighting:2, bug:2, rock:0.5, steel:0.5},
+    psychic:  {fighting:2, poison:2, psychic:0.5, dark:0, steel:0.5},
+    bug:      {fire:0.5, grass:2, fighting:0.5, poison:0.5, flying:0.5, psychic:2, ghost:0.5, dark:2, steel:0.5, fairy:0.5},
+    rock:     {fire:2, ice:2, fighting:0.5, ground:0.5, flying:2, bug:2, steel:0.5},
+    ghost:    {normal:0, psychic:2, ghost:2, dark:0.5},
+    dragon:   {dragon:2, steel:0.5, fairy:0},
+    dark:     {fighting:0.5, psychic:2, ghost:2, dark:0.5, fairy:0.5},
+    steel:    {fire:0.5, water:0.5, electric:0.5, ice:2, rock:2, steel:0.5, fairy:2},
+    fairy:    {fire:0.5, fighting:2, poison:0.5, dragon:2, dark:2, steel:0.5},
+  };
+  for (const atk of T) {
+    chart[atk] = {};
+    for (const def of T) {
+      chart[atk][def] = (data[atk] && data[atk][def] !== undefined) ? data[atk][def] : 1;
+    }
+  }
+  return chart;
+})();
+
+// Abilities that modify type effectiveness
+const ABILITY_TYPE_MODS = {
+  // Immunity abilities
+  'levitate':        { removes: ['ground'] },
+  'flash-fire':      { removes: ['fire'] },
+  'water-absorb':    { removes: ['water'] },
+  'volt-absorb':     { removes: ['electric'] },
+  'motor-drive':     { removes: ['electric'] },
+  'lightning-rod':   { removes: ['electric'] },
+  'storm-drain':     { removes: ['water'] },
+  'sap-sipper':      { removes: ['grass'] },
+  'dry-skin':        { removes: ['water'], adds: { fire: 1.25 } },
+  'earth-eater':     { removes: ['ground'] },
+  'well-baked-body': { removes: ['fire'] },
+  // Type-change / add-type abilities
+  'wonder-guard':    { special: 'wonder-guard' },
+  'thick-fat':       { halves: ['fire','ice'] },
+  'heatproof':       { halves: ['fire'] },
+  'water-bubble':    { halves: ['fire'] },
+  'fluffy':          { halves: ['contact'], adds: { fire: 2 } }, // contact is move-dependent, skip
+  'purifying-salt':  { halves: ['ghost'] },
+  'rocky-payload':   {}, // offense only
+};
+
+function computeWeaknesses(types, abilityName = null) {
+  const allTypes = ['normal','fire','water','electric','grass','ice','fighting','poison','ground',
+                    'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+  const result = {};
+  for (const atk of allTypes) {
+    let mult = 1;
+    for (const def of types) {
+      mult *= (TYPE_CHART[atk]?.[def] ?? 1);
+    }
+    result[atk] = mult;
+  }
+
+  if (abilityName && ABILITY_TYPE_MODS[abilityName]) {
+    const mod = ABILITY_TYPE_MODS[abilityName];
+    if (mod.special === 'wonder-guard') {
+      // Wonder Guard: only super effective moves hit
+      for (const atk of allTypes) {
+        if (result[atk] <= 1) result[atk] = 0;
+      }
+    }
+    if (mod.removes) {
+      for (const t of mod.removes) result[t] = 0;
+    }
+    if (mod.halves) {
+      for (const t of mod.halves) result[t] = result[t] * 0.5;
+    }
+    if (mod.adds) {
+      for (const [t, m] of Object.entries(mod.adds)) result[t] = result[t] * m;
+    }
+  }
+  return result;
+}
+
+function weaknessHtml(weaknesses, activeAbility) {
+  const allTypes = ['normal','fire','water','electric','grass','ice','fighting','poison','ground',
+                    'flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+
+  function multLabel(m) {
+    if (m === 0)   return '0';
+    if (m <= 0.25) return '¼';
+    if (m <= 0.5)  return '½';
+    if (m < 2)     return '1';
+    if (m < 4)     return '2';
+    return '4';
+  }
+  function multCls(m) {
+    if (m === 0)   return 'wk-0x';
+    if (m <= 0.25) return 'wk-qtr';
+    if (m <= 0.5)  return 'wk-half';
+    if (m < 2)     return 'wk-1x';
+    if (m < 4)     return 'wk-2x';
+    return 'wk-4x';
+  }
+  const abbr = {
+    normal:'NOR', fire:'FIR', water:'WAT', electric:'ELE', grass:'GRA', ice:'ICE',
+    fighting:'FIG', poison:'POI', ground:'GRO', flying:'FLY', psychic:'PSY', bug:'BUG',
+    rock:'ROC', ghost:'GHO', dragon:'DRA', dark:'DAR', steel:'STE', fairy:'FAI'
+  };
+
+  const row1 = allTypes.slice(0, 9);
+  const row2 = allTypes.slice(9);
+
+  function buildRow(types) {
+    return '<tr>' + types.map(t => {
+      const m = weaknesses[t];
+      return `<td><div class="wk-type-cell"><span class="wk-type-pill type-${t}">${abbr[t]}</span><span class="wk-mult ${multCls(m)}">${multLabel(m)}</span></div></td>`;
+    }).join('') + '</tr>';
+  }
+
+  const abilityNote = activeAbility
+    ? `<div class="weakness-note">★ Showing weaknesses with <b style="color:var(--red-dark)">${activeAbility.replace(/-/g,' ')}</b> active</div>`
+    : `<div class="weakness-note">Tap an ability below to see how it changes weaknesses</div>`;
+
+  return `<div class="weakness-table-wrap"><table class="weakness-table"><tbody>${buildRow(row1)}${buildRow(row2)}</tbody></table></div>` + abilityNote;
+}
+
+let currentAbilityFilter = null;
+let abilityCache = {};
+
+async function fetchAbilityDesc(abilityName) {
+  if (abilityCache[abilityName]) return abilityCache[abilityName];
+  try {
+    const data = await fetch(`${API}/ability/${abilityName}`).then(r => r.json());
+    const entry = data.effect_entries?.find(e => e.language.name === 'en');
+    const short = data.effect_entries?.find(e => e.language.name === 'en')?.short_effect
+      || entry?.effect?.split('.')[0] + '.'
+      || '—';
+    const affectsWeakness = !!ABILITY_TYPE_MODS[abilityName];
+    abilityCache[abilityName] = { short, affectsWeakness };
+    return abilityCache[abilityName];
+  } catch(e) {
+    return { short: 'Description unavailable.', affectsWeakness: false };
+  }
+}
+
+async function toggleAbilityFilter(abilityName, el) {
+  if (currentAbilityFilter === abilityName) {
+    currentAbilityFilter = null;
+    document.querySelectorAll('.ability-card').forEach(c => c.classList.remove('ability-active'));
+  } else {
+    currentAbilityFilter = abilityName;
+    document.querySelectorAll('.ability-card').forEach(c => c.classList.remove('ability-active'));
+    el.classList.add('ability-active');
+  }
+  // Re-render just the weakness section
+  const types = ((currentFormData && currentFormData.types) || currentPokemon.types).map(t => t.type.name);
+  const weaknesses = computeWeaknesses(types, currentAbilityFilter);
+  document.getElementById('weakness-section').innerHTML = weaknessHtml(weaknesses, currentAbilityFilter);
+}
+
+let currentPokemon = null;
+let currentSpecies = null;
+let currentEvoChain = null;
+let currentTab = 'info';
+let isShiny = false;
+// Store the current form's sprites separately so shiny still works
+let currentFormNormalSprite = null;
+let currentFormShinySprite = null;
+
+// ── SEARCH ──
+async function searchPokemon() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if (!q) return;
+  await loadPokemon(q);
+}
+
+async function randomPokemon() {
+  const id = Math.floor(Math.random() * 1025) + 1;
+  await loadPokemon(id);
+}
+
+async function loadPokemon(query) {
+  showLoading();
+  try {
+    let poke;
+    // First try direct lookup (works for most pokemon and numbered IDs)
+    const r = await fetch(`${API}/pokemon/${query}`);
+    if (r.ok) {
+      poke = await r.json();
+    } else {
+      // Fall back to species lookup — catches pokemon whose PokéAPI entry
+      // has a suffix (e.g. "aegislash" → "aegislash-shield", "meowstic" → "meowstic-male")
+      const speciesResp = await fetch(`${API}/pokemon-species/${query}`);
+      if (!speciesResp.ok) throw new Error('Not found');
+      const speciesData = await speciesResp.json();
+      // Use the default variety
+      const defaultVariety = speciesData.varieties.find(v => v.is_default) || speciesData.varieties[0];
+      const pr = await fetch(defaultVariety.pokemon.url);
+      if (!pr.ok) throw new Error('Not found');
+      poke = await pr.json();
+    }
+
+    const species = await fetch(poke.species.url).then(r => r.json());
+    currentPokemon = poke;
+    currentSpecies = species;
+    currentFormNormalSprite = null;
+    currentFormShinySprite = null;
+    currentFormData = null;
+    isShiny = false;
+
+    // fetch evo chain
+    currentEvoChain = null;
+    try {
+      currentEvoChain = await fetch(species.evolution_chain.url).then(r => r.json());
+    } catch(e) {}
+
+    updateScreen(poke, species);
+    renderTab(currentTab);
+  } catch(e) {
+    showError('Pokémon not found!<br/>Try a different name or number.');
+  }
+}
+
+// ── SCREEN ──
+function updateScreen(poke, species) {
+  const num = String(poke.id).padStart(3,'0');
+  document.getElementById('idDisplay').textContent = `#${num}`;
+  document.getElementById('searchInput').value = '';
+
+  // Stop any playing cry
+  if (cryAudio && !cryAudio.paused) { cryAudio.pause(); cryAudio = null; }
+
+  const spriteUrl = getSpriteUrl(poke, false);
+  const types = poke.types.map(t => t.type.name);
+
+  document.getElementById('screenContent').innerHTML = `
+    <img class="pokemon-sprite" id="mainSprite"
+      src="${spriteUrl}"
+      alt="${poke.name}"
+      style="width:${settings.spriteSize}px;height:${settings.spriteSize}px"
+      onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png'"
+    />
+    <div class="pokemon-name-screen">${poke.name.replace(/-/g,' ')}</div>
+    <div class="type-badges">
+      ${types.map(t => `<span class="type-badge type-${t}">${t}</span>`).join('')}
+    </div>
+    <button class="shiny-toggle" id="shinyBtn" onclick="toggleShiny()">✦ SHINY</button>
+  `;
+}
+
+function getSpriteUrl(poke, shiny) {
+  if (shiny) {
+    // prefer form shiny, fall back to base shiny, then base normal
+    return currentFormShinySprite
+      || poke.sprites?.other?.['official-artwork']?.front_shiny
+      || poke.sprites?.front_shiny
+      || currentFormNormalSprite
+      || poke.sprites?.other?.['official-artwork']?.front_default
+      || poke.sprites?.front_default;
+  }
+  // prefer form normal, fall back to base normal
+  return currentFormNormalSprite
+    || poke.sprites?.other?.['official-artwork']?.front_default
+    || poke.sprites?.front_default;
+}
+
+function toggleShiny() {
+  if (!currentPokemon) return;
+  isShiny = !isShiny;
+  const btn = document.getElementById('shinyBtn');
+  if (btn) btn.classList.toggle('active', isShiny);
+  const img = document.getElementById('mainSprite');
+  if (img) {
+    const url = getSpriteUrl(currentPokemon, isShiny);
+    img.style.opacity = '0';
+    setTimeout(() => { img.src = url; img.style.opacity = '1'; }, 150);
+  }
+}
+
+// ── TABS ──
+function switchTab(tab) {
+  currentTab = tab;
+  ['info','stats','evo','games','moves','settings'].forEach(t => {
+    document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
+    document.getElementById(`tabBtn${t.charAt(0).toUpperCase()+t.slice(1)}`)?.classList.toggle('active-btn', t === tab);
+  });
+  // Scroll the tab bar so the active tab is visible
+  const activeTabEl = document.getElementById(`tab-${tab}`);
+  if (activeTabEl) activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  if (tab === 'settings') { renderSettings(); return; }
+  if (currentPokemon) renderTab(tab);
+}
+
+function renderTab(tab) {
+  switch(tab) {
+    case 'info': renderInfo(); break;
+    case 'stats': renderStats(); break;
+    case 'evo': renderEvo(); break;
+    case 'games': renderGames(); break;
+    case 'moves': renderMoves(); break;
+  }
+}
+
+// ── INFO ──
+async function renderInfo() {
+  const p = currentPokemon, s = currentSpecies;
+  if (!p) return;
+
+  const desc = getEnglishDesc(s);
+  const genus = s.genera?.find(g => g.language.name === 'en')?.genus || '';
+
+  // Height: metric vs imperial
+  const heightM = p.height / 10;
+  let heightDisplay;
+  if (settings.heightUnit === 'imperial') {
+    const totalInches = heightM / 0.0254;
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    heightDisplay = `${feet}'${inches}"`;
+  } else {
+    heightDisplay = `${heightM.toFixed(1)} m`;
+  }
+
+  const weight = (p.weight / 10).toFixed(1);
+  const abilities = p.abilities.map(a =>
+    `<span style="text-transform:capitalize;font-weight:600">${a.ability.name.replace(/-/g,' ')}</span>${a.is_hidden ? ' <small style="color:#999;font-size:9px">(Hidden)</small>' : ''}`
+  ).join(', ');
+
+  const eggGroups = s.egg_groups?.map(e => e.name).join(', ') || '—';
+  const captureRate = s.capture_rate;
+  const baseHappy = s.base_happiness;
+  const growthRate = s.growth_rate?.name?.replace(/-/g,' ') || '—';
+  const generation = s.generation?.name?.replace('generation-','Gen ').toUpperCase() || '—';
+
+  setContent(`
+    <div class="pokedex-num">
+      <span>#${String(p.id).padStart(3,'0')}</span>
+      <span style="text-transform:capitalize;font-size:12px;color:#555;font-family:var(--font-body)">${p.name.replace(/-/g,' ')}</span>
+      ${genus ? `<span style="font-size:10px;color:#aaa;font-family:var(--font-body);font-style:italic">${genus}</span>` : ''}
+    </div>
+
+    ${desc ? `<div class="desc-box"><p>${desc}</p></div>` : ''}
+
+    <div class="section-header">Base Info</div>
+    <div class="info-grid">
+      <div class="info-card height-trigger" onclick="openHeightModal()" title="Tap to compare height"><label>Height</label><value>${heightDisplay}<span class="height-trigger-hint">📏 compare</span></value></div>
+      <div class="info-card"><label>Weight</label><value>${settings.heightUnit === 'imperial' ? (weight * 2.20462).toFixed(1) + ' lbs' : weight + ' kg'}</value></div>
+      <div class="info-card" style="grid-column:span 2"><label>Abilities</label><value style="font-size:13px">${abilities}</value></div>
+      <div class="info-card"><label>Generation</label><value style="font-size:13px">${generation}</value></div>
+      <div class="info-card"><label>Growth Rate</label><value style="font-size:13px;text-transform:capitalize">${growthRate}</value></div>
+      <div class="info-card"><label>Egg Groups</label><value style="font-size:13px;text-transform:capitalize">${eggGroups}</value></div>
+      <div class="info-card"><label>Capture Rate</label><value>${captureRate}</value></div>
+      <div class="info-card"><label>Base Happiness</label><value>${baseHappy ?? '—'}</value></div>
+    </div>
+
+    <div class="cry-section">
+      <div class="section-header">Pokémon Cry</div>
+      <div class="cry-controls">
+        <select class="cry-gen-select" id="cryGenSelect" onchange="updateCryStatus()" value="latest">
+          ${buildCryGenOptions(p.id)}
+        </select>
+        <button class="cry-play-btn" id="cryPlayBtn" onclick="playCry(${p.id})">
+          ▶ PLAY CRY
+        </button>
+        <div class="cry-waveform" id="cryWaveform">
+          <span style="height:6px"></span>
+          <span style="height:12px"></span>
+          <span style="height:18px"></span>
+          <span style="height:10px"></span>
+          <span style="height:7px"></span>
+        </div>
+      </div>
+      <div class="cry-status" id="cryStatus"></div>
+    </div>
+  `);
+
+  updateCryStatus();
+}
+
+function getEnglishDesc(species) {
+  const entry = species.flavor_text_entries?.find(e => e.language.name === 'en');
+  return entry?.flavor_text?.replace(/\f/g,' ').replace(/\n/g,' ') || '';
+}
+
+// ── STATS ──
+// ── STAT BAR COLOR ──
+// Gradient stops: value -> [r, g, b]
+function statColor(val) {
+  const stops = [
+    [0,   [139,  0,   0]],  // dark red
+    [30,  [200,  0,   0]],  // red
+    [45,  [255, 140,  0]],  // orange
+    [60,  [255, 220,  0]],  // yellow
+    [80,  [160, 230,  0]],  // lime
+    [100, [120, 210,  0]],  // lime
+    [120, [ 0,  160,  60]], // emerald
+    [140, [ 0,  140,  50]], // emerald
+    [150, [ 0,  194, 184]], // #00C2B8
+  ];
+  // Clamp
+  if (val <= stops[0][0]) return `rgb(${stops[0][1].join(',')})`;
+  if (val >= stops[stops.length-1][0]) return `rgb(${stops[stops.length-1][1].join(',')})`;
+  // Find surrounding stops and lerp
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [v0, c0] = stops[i];
+    const [v1, c1] = stops[i+1];
+    if (val >= v0 && val <= v1) {
+      const t = (val - v0) / (v1 - v0);
+      const r = Math.round(c0[0] + t * (c1[0] - c0[0]));
+      const g = Math.round(c0[1] + t * (c1[1] - c0[1]));
+      const b = Math.round(c0[2] + t * (c1[2] - c0[2]));
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+}
+
+async function renderStats() {
+  const p = currentPokemon;
+  if (!p) return;
+
+  // Use form-specific data if a form is selected
+  const activeStats = (currentFormData && currentFormData.stats) || p.stats;
+  const activeTypes = (currentFormData && currentFormData.types) || p.types;
+  const activeAbilities = (currentFormData && currentFormData.abilities) || p.abilities;
+
+  const statNames = {
+    'hp':'HP','attack':'Attack','defense':'Defense',
+    'special-attack':'Sp. Atk','special-defense':'Sp. Def','speed':'Speed'
+  };
+
+  let total = 0;
+  const rows = activeStats.map(s => {
+    const base = s.base_stat;
+    total += base;
+    const pct = Math.min(100, (base / 255) * 100);
+    const min = calcMin(base, s.stat.name);
+    const max = calcMax(base, s.stat.name);
+    const color = statColor(base);
+    return `
+      <div class="stat-row">
+        <span class="stat-name">${statNames[s.stat.name] || s.stat.name}</span>
+        <span class="stat-val">${base}</span>
+        <div class="stat-bar-bg">
+          <div class="stat-bar" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="stat-min-max">${min} – ${max}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Compute initial weaknesses (no ability)
+  const types = activeTypes.map(t => t.type.name);
+  currentAbilityFilter = null;
+  const weaknesses = computeWeaknesses(types, null);
+  const weakHtml = weaknessHtml(weaknesses, null);
+
+  // Build abilities HTML (descriptions loaded async after render)
+  const abilitiesHtml = activeAbilities.map(a => {
+    const name = a.ability.name;
+    const isHidden = a.is_hidden;
+    const hasMod = !!ABILITY_TYPE_MODS[name];
+    return `<div class="ability-card ${isHidden ? 'ability-hidden' : ''}" id="ability-card-${name}"
+      onclick="toggleAbilityFilter('${name}', this)">
+      <div class="ability-name">
+        ${name.replace(/-/g,' ')}
+        <span class="ability-tag ${isHidden ? 'hidden-tag' : ''}">${isHidden ? 'Hidden' : 'Ability'}</span>
+        ${hasMod ? '<span class="ability-affects-badge">⚡ Affects weaknesses</span>' : ''}
+      </div>
+      <div class="ability-desc" id="ability-desc-${name}">Loading...</div>
+    </div>`;
+  }).join('');
+
+  setContent(`
+    <div class="section-header">Base Stats</div>
+    ${rows}
+    <div class="stat-row" style="margin-top:12px;border-top:2px solid #eee;padding-top:12px">
+      <span class="stat-name" style="color:#555;font-weight:600">TOTAL</span>
+      <span class="stat-val" style="color:#333;font-size:14px">${total}</span>
+      <div class="stat-bar-bg">
+        <div class="stat-bar" style="width:${Math.min(100,(total/720)*100)}%;background:linear-gradient(to right,#888,#555)"></div>
+      </div>
+      <span class="stat-min-max">/ 720</span>
+    </div>
+    <div class="stat-legend">
+      <span>Min = Lv50 · 0 IV · Hindering nature</span>
+      <span>Max = Lv100 · 31 IV · Beneficial nature</span>
+    </div>
+
+    <div class="section-header" style="margin-top:20px">Type Weaknesses</div>
+    <div id="weakness-section">${weakHtml}</div>
+
+    <div class="section-header" style="margin-top:20px">Abilities</div>
+    <div class="ability-list">${abilitiesHtml}</div>
+  `);
+
+  // Load ability descriptions asynchronously
+  for (const a of activeAbilities) {
+    const name = a.ability.name;
+    const info = await fetchAbilityDesc(name);
+    const el = document.getElementById(`ability-desc-${name}`);
+    if (el) el.textContent = info.short;
+    if (info.affectsWeakness && !ABILITY_TYPE_MODS[name]) {
+      const card = document.getElementById(`ability-card-${name}`);
+      if (card && !card.querySelector('.ability-affects-badge')) {
+        const nameEl = card.querySelector('.ability-name');
+        if (nameEl) nameEl.insertAdjacentHTML('beforeend', '<span class="ability-affects-badge">⚡ Affects weaknesses</span>');
+      }
+    }
+  }
+}
+
+function calcMin(base, statName) {
+  if (statName === 'hp') {
+    return Math.floor((2 * base * 50 / 100) + 50 + 10) - Math.floor(Math.floor((2 * base * 50 / 100) + 50 + 10) * 0.1);
+  }
+  return Math.floor((Math.floor((2 * base * 100 / 100) + 5)) * 0.9);
+}
+
+function calcMax(base, statName) {
+  if (statName === 'hp') {
+    return Math.floor((2 * base + 31) * 100 / 100) + 100 + 10;
+  }
+  return Math.floor((Math.floor((2 * base + 31) * 100 / 100) + 5) * 1.1);
+}
+
+// ── EVO ──
+async function renderEvo() {
+  if (!currentPokemon) return;
+  setContent('<div class="loading"><div class="pokeball-spin"></div><p>LOADING...</p></div>');
+
+  try {
+    if (!currentEvoChain) throw new Error('No chain');
+
+    const chain = currentEvoChain.chain;
+    const stages = [];
+    await traverseChain(chain, stages, []);
+
+    // Also get all forms
+    const formVariants = await loadForms(currentPokemon.id, currentSpecies);
+    // Store form variants globally so setForm can look up data by index
+    window._formVariants = formVariants;
+
+    let evoHtml = buildEvoHtml(stages);
+    let formsHtml = '';
+    if (formVariants.length > 1) {
+      const activeNormal = currentFormNormalSprite || getSpriteUrl(currentPokemon, false);
+      formsHtml = `
+        <div class="section-header" style="margin-top:20px">Alternate Forms</div>
+        <div class="forms-grid">
+          ${formVariants.map((f, i) => `
+            <div class="form-card ${f.sprite === activeNormal ? 'active-form':''}"
+                 onclick="setFormByIndex(${i})">
+              <img src="${f.sprite}" alt="${f.name}"
+                   onerror="this.style.display='none'"/>
+              <span>${f.name.replace(/-/g,' ')}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    setContent(`
+      <div class="section-header">Evolution Chain</div>
+      <div class="evo-chain">${evoHtml}</div>
+      ${formsHtml}
+    `);
+  } catch(e) {
+    setContent('<div class="no-data">No evolution data available.</div>');
+  }
+}
+
+async function traverseChain(node, stages, triggers) {
+  const id = node.species.url.split('/').slice(-2,-1)[0];
+  const data = await fetch(`${API}/pokemon/${id}`).then(r => r.json()).catch(() => null);
+  const sprite = data?.sprites?.other?.['official-artwork']?.front_default
+    || data?.sprites?.front_default || '';
+
+  stages.push({
+    name: node.species.name,
+    id: id,
+    sprite: sprite,
+    triggers: [...triggers]
+  });
+
+  for (const evo of node.evolves_to) {
+    const triggerParts = [];
+    const det = evo.evolution_details?.[0];
+    if (det) {
+      if (det.min_level) triggerParts.push(`Lv.${det.min_level}`);
+      if (det.item) triggerParts.push(det.item.name.replace(/-/g,' '));
+      if (det.trigger?.name === 'use-item' && det.item) triggerParts.push('use item');
+      if (det.trigger?.name === 'trade') triggerParts.push('Trade');
+      if (det.min_happiness) triggerParts.push(`Happiness ${det.min_happiness}+`);
+      if (det.time_of_day) triggerParts.push(det.time_of_day);
+      if (det.known_move) triggerParts.push(`Know ${det.known_move.name}`);
+      if (det.location) triggerParts.push(`at ${det.location.name.replace(/-/g,' ')}`);
+    }
+    await traverseChain(evo, stages, triggerParts.length ? triggerParts : ['→']);
+  }
+}
+
+function buildEvoHtml(stages) {
+  const currentId = String(currentPokemon.id);
+  let html = '';
+  stages.forEach((s, i) => {
+    if (i > 0 && s.triggers.length) {
+      html += `<div class="evo-arrow">
+        <span>→</span>
+        <small>${s.triggers.slice(0,2).join('<br/>')}</small>
+      </div>`;
+    }
+    html += `<div class="evo-mon ${s.id === currentId ? 'current' : ''}"
+      onclick="loadPokemon(${s.id})">
+      <img src="${s.sprite}" alt="${s.name}" width="62" height="62" style="image-rendering:pixelated"
+           onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${s.id}.png'"/>
+      <span>#${String(s.id).padStart(3,'0')}<br/>${s.name.replace(/-/g,' ')}</span>
+    </div>`;
+  });
+  return html;
+}
+
+async function loadForms(id, species) {
+  const forms = [];
+  if (!species.varieties) return forms;
+
+  for (const v of species.varieties) {
+    try {
+      const pData = await fetch(v.pokemon.url).then(r => r.json());
+      const normalSprite = pData.sprites?.other?.['official-artwork']?.front_default
+        || pData.sprites?.front_default || '';
+      const shinySprite = pData.sprites?.other?.['official-artwork']?.front_shiny
+        || pData.sprites?.front_shiny || '';
+      if (normalSprite) {
+        forms.push({
+          name: pData.name,
+          sprite: normalSprite,
+          shinySprite: shinySprite,
+          stats: pData.stats,
+          types: pData.types,
+          abilities: pData.abilities,
+        });
+      }
+    } catch(e) {}
+  }
+  return forms;
+}
+
+// Holds the full data for the currently active form (null = use currentPokemon)
+let currentFormData = null;
+
+function setForm(normalSprite, shinySprite, name, formData) {
+  currentFormNormalSprite = normalSprite || null;
+  currentFormShinySprite = shinySprite || null;
+  currentFormData = formData || null;
+  const img = document.getElementById('mainSprite');
+  if (img) {
+    const url = getSpriteUrl(currentPokemon, isShiny);
+    img.style.opacity = '0';
+    setTimeout(() => { img.src = url; img.style.opacity = '1'; img.alt = name; }, 150);
+  }
+  // Re-render stats tab if active so stats/weaknesses update immediately
+  if (currentTab === 'stats') renderStats();
+  // refresh forms tab to update active state
+  renderEvo();
+}
+
+function setFormByIndex(i) {
+  const f = window._formVariants && window._formVariants[i];
+  if (!f) return;
+  setForm(f.sprite, f.shinySprite || '', f.name, f);
+}
+
+// ── GAMES ──
+// Map version groups → individual game versions (shared by renderGames + scale-availability check)
+const VG_TO_VERSIONS = {
+  'red-blue':                        ['red','blue'],
+  'yellow':                          ['yellow'],
+  'gold-silver':                     ['gold','silver'],
+  'crystal':                         ['crystal'],
+  'ruby-sapphire':                   ['ruby','sapphire'],
+  'emerald':                         ['emerald'],
+  'firered-leafgreen':               ['firered','leafgreen'],
+  'diamond-pearl':                   ['diamond','pearl'],
+  'platinum':                        ['platinum'],
+  'heartgold-soulsilver':            ['heartgold','soulsilver'],
+  'black-white':                     ['black','white'],
+  'black-2-white-2':                 ['black-2','white-2'],
+  'x-y':                             ['x','y'],
+  'omega-ruby-alpha-sapphire':       ['omega-ruby','alpha-sapphire'],
+  'sun-moon':                        ['sun','moon'],
+  'ultra-sun-ultra-moon':            ['ultra-sun','ultra-moon'],
+  'lets-go-pikachu-lets-go-eevee':   ['lets-go-pikachu','lets-go-eevee'],
+  'sword-shield':                    ['sword','shield'],
+  'the-isle-of-armor':               ['the-isle-of-armor'],
+  'the-crown-tundra':                ['the-crown-tundra'],
+  'brilliant-diamond-and-shining-pearl': ['brilliant-diamond','shining-pearl'],
+  'legends-arceus':                  ['legends-arceus'],
+  'scarlet-violet':                  ['scarlet','violet'],
+  'the-teal-mask':                   ['the-teal-mask'],
+  'the-indigo-disk':                 ['the-indigo-disk'],
+  'legends-za':                      ['legends-za'],
+};
+
+// Derive the full set of games a Pokémon appears in.
+// game_indices only covers up to Gen 5 in PokéAPI; for Gen 6+ we derive
+// presence from move version_group_details, plus our local Gen 10 roster.
+function derivePokemonGameSet(p) {
+  const indexGames = new Set(p.game_indices?.map(g => g.version.name) || []);
+
+  const moveVGs = new Set();
+  for (const m of (p.moves || [])) {
+    for (const d of m.version_group_details) {
+      moveVGs.add(d.version_group.name);
+    }
+  }
+
+  const allGames = new Set(indexGames);
+  for (const vg of moveVGs) {
+    const versions = VG_TO_VERSIONS[vg];
+    if (versions) versions.forEach(v => allGames.add(v));
+  }
+
+  for (const [gameKey, gameData] of Object.entries(GEN10_GAMES)) {
+    if (gameData.ids.has(p.id)) allGames.add(gameKey);
+  }
+
+  return allGames;
+}
+
+// The "scale" mechanic (individual size 1-255) was introduced in Scarlet/Violet.
+// Only Pokémon confirmed to appear in those games get the scale slider.
+function pokemonSupportsScale(p) {
+  const games = derivePokemonGameSet(p);
+  return games.has('scarlet') || games.has('violet');
+}
+
+async function renderGames() {
+  const p = currentPokemon;
+  if (!p) return;
+
+  const allGames = derivePokemonGameSet(p);
+
+  if (allGames.size === 0) {
+    setContent('<div class="no-data">No game data available.</div>');
+    return;
+  }
+
+  const gameDisplayNames = {
+    'red':'Red','blue':'Blue','yellow':'Yellow',
+    'gold':'Gold','silver':'Silver','crystal':'Crystal',
+    'ruby':'Ruby','sapphire':'Sapphire','emerald':'Emerald','firered':'FireRed','leafgreen':'LeafGreen',
+    'diamond':'Diamond','pearl':'Pearl','platinum':'Platinum','heartgold':'HeartGold','soulsilver':'SoulSilver',
+    'black':'Black','white':'White','black-2':'Black 2','white-2':'White 2',
+    'x':'X','y':'Y','omega-ruby':'Omega Ruby','alpha-sapphire':'Alpha Sapphire',
+    'sun':'Sun','moon':'Moon','ultra-sun':'Ultra Sun','ultra-moon':'Ultra Moon',
+    'lets-go-pikachu':"Let's Go Pikachu",'lets-go-eevee':"Let's Go Eevee",
+    'sword':'Sword','shield':'Shield',
+    'the-isle-of-armor':'Isle of Armor','the-crown-tundra':'Crown Tundra',
+    'brilliant-diamond':'Brilliant Diamond','shining-pearl':'Shining Pearl',
+    'legends-arceus':'Legends: Arceus',
+    'scarlet':'Scarlet','violet':'Violet',
+    'the-teal-mask':'Teal Mask','the-indigo-disk':'Indigo Disk',
+    'legends-za':'Legends: Z-A'
+  };
+
+  const genGroups = {
+    'Gen I':   ['red','blue','yellow'],
+    'Gen II':  ['gold','silver','crystal'],
+    'Gen III': ['ruby','sapphire','emerald','firered','leafgreen'],
+    'Gen IV':  ['diamond','pearl','platinum','heartgold','soulsilver'],
+    'Gen V':   ['black','white','black-2','white-2'],
+    'Gen VI':  ['x','y','omega-ruby','alpha-sapphire'],
+    'Gen VII': ['sun','moon','ultra-sun','ultra-moon','lets-go-pikachu','lets-go-eevee'],
+    'Gen VIII':['sword','shield','the-isle-of-armor','the-crown-tundra','brilliant-diamond','shining-pearl','legends-arceus'],
+    'Gen IX':  ['scarlet','violet','the-teal-mask','the-indigo-disk'],
+    'Gen X':   ['legends-za']
+  };
+
+  let html = '';
+  for (const [gen, genGames] of Object.entries(genGroups)) {
+    const present = genGames.filter(g => allGames.has(g));
+    if (present.length === 0) continue;
+    const cssKey = g => g.replace(/[^a-z]/g,'');
+    // Mark Gen 10 games with a note that data is from local roster
+    const gen10note = gen === 'Gen X' ? `<span style="font-size:4px;color:#aaa;font-family:var(--font-body);font-weight:normal;margin-left:8px">★ local roster data</span>` : '';
+    html += `<div class="section-header">${gen}${gen10note}</div>
+      <div class="games-grid" style="margin-bottom:16px">
+        ${present.map(g => `<span class="game-badge game-${cssKey(g)}">${gameDisplayNames[g] || g}</span>`).join('')}
+      </div>`;
+  }
+
+  // Any remaining not in the known groups
+  const allGrouped = new Set(Object.values(genGroups).flat());
+  const ungrouped = [...allGames].filter(g => !allGrouped.has(g));
+  if (ungrouped.length) {
+    html += `<div class="section-header">Other</div><div class="games-grid">
+      ${ungrouped.map(g => `<span class="game-badge" style="background:#ddd;color:#444">${gameDisplayNames[g] || g}</span>`).join('')}
+    </div>`;
+  }
+
+  setContent(html || '<div class="no-data">No game data available.</div>');
+}
+
+// ── MOVES ──
+let currentMoveGen = 'all';
+async function renderMoves() {
+  const p = currentPokemon;
+  if (!p) return;
+
+  const genOptions = [
+    ['all','All Gens'],['generation-i','Gen I'],['generation-ii','Gen II'],
+    ['generation-iii','Gen III'],['generation-iv','Gen IV'],['generation-v','Gen V'],
+    ['generation-vi','Gen VI'],['generation-vii','Gen VII'],['generation-viii','Gen VIII'],
+    ['generation-ix','Gen IX'],['generation-x','Gen X']
+  ];
+
+  // Filter moves by version group / generation
+  let moves = p.moves;
+
+  // Build version group filter by gen
+  const genVersionGroups = {
+    'generation-i': ['red-blue','yellow'],
+    'generation-ii': ['gold-silver','crystal'],
+    'generation-iii': ['ruby-sapphire','emerald','firered-leafgreen'],
+    'generation-iv': ['diamond-pearl','platinum','heartgold-soulsilver'],
+    'generation-v': ['black-white','black-2-white-2'],
+    'generation-vi': ['x-y','omega-ruby-alpha-sapphire'],
+    'generation-vii': ['sun-moon','ultra-sun-ultra-moon','lets-go-pikachu-lets-go-eevee'],
+    'generation-viii': ['sword-shield','brilliant-diamond-and-shining-pearl','legends-arceus'],
+    'generation-ix': ['scarlet-violet','the-teal-mask','the-indigo-disk'],
+    'generation-x':  ['legends-za'],
+  };
+
+  let filteredMoves = moves;
+  if (currentMoveGen !== 'all' && genVersionGroups[currentMoveGen]) {
+    const vgs = genVersionGroups[currentMoveGen];
+    filteredMoves = moves.filter(m =>
+      m.version_group_details.some(d => vgs.includes(d.version_group.name))
+    );
+  }
+
+  // Sort: level-up first, then alphabetical
+  filteredMoves = [...filteredMoves].sort((a,b) => {
+    const aLevel = a.version_group_details.find(d => d.move_learn_method.name === 'level-up')?.level_learned_at || 999;
+    const bLevel = b.version_group_details.find(d => d.move_learn_method.name === 'level-up')?.level_learned_at || 999;
+    if (aLevel !== bLevel) return aLevel - bLevel;
+    return a.move.name.localeCompare(b.move.name);
+  });
+
+  const rows = filteredMoves.map(m => {
+    const details = m.version_group_details;
+    let method = '', level = '';
+
+    // Find most recent learn method
+    const levelUp = details.filter(d => d.move_learn_method.name === 'level-up');
+    if (levelUp.length) {
+      level = levelUp[levelUp.length-1].level_learned_at;
+      method = 'level-up';
+    } else {
+      const anyDetail = details[details.length - 1];
+      method = anyDetail?.move_learn_method.name || '';
+    }
+
+    const methodLabels = {
+      'level-up': `Lv. ${level}`,
+      'machine': 'TM/HM',
+      'egg': 'Egg Move',
+      'tutor': 'Tutor',
+      'stadium-surfing-pikachu': 'Special',
+      'light-ball-egg': 'Special',
+    };
+
+    return `<tr>
+      <td>${m.move.name.replace(/-/g,' ')}</td>
+      <td><span class="learn-method">${methodLabels[method] || method || '—'}</span></td>
+    </tr>`;
+  }).join('');
+
+  setContent(`
+    <div class="moves-controls">
+      <label>Generation:</label>
+      <select onchange="currentMoveGen=this.value;renderMoves()">
+        ${genOptions.map(([v,l]) => `<option value="${v}" ${currentMoveGen===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <span style="margin-left:auto;font-family:var(--font-pixel);font-size:5px;color:#aaa">${filteredMoves.length} moves</span>
+    </div>
+    ${filteredMoves.length === 0
+      ? '<div class="no-data">No moves found for this generation.</div>'
+      : `<div class="moves-table-wrap"><table class="moves-table">
+          <thead><tr><th>Move</th><th>Learn Method</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>`
+    }
+  `);
+}
+
+// ── SETTINGS STATE ──
+const SETTINGS_DEFAULTS = {
+  spriteSize: 108,   // px, shown on top screen
+  fontSize: 1.0,
+  heightUnit: 'imperial', // 'metric' | 'imperial'
+  trainerHeightIn: 68,    // default trainer height: 5'8"
+};
+let settings = { ...SETTINGS_DEFAULTS };
+
+function applySettings() {
+  // Sprite size
+  const sprite = document.getElementById('mainSprite');
+  if (sprite) { sprite.style.width = settings.spriteSize + 'px'; sprite.style.height = settings.spriteSize + 'px'; }
+
+  // Font scale on the content area
+  const contentScreen = document.getElementById('contentScreen');
+  if (contentScreen) contentScreen.style.fontSize = settings.fontSize + 'em';
+
+  // Re-render info tab if active so height unit updates
+  if (currentTab === 'info' && currentPokemon) renderInfo();
+}
+
+// ── HEIGHT COMPARISON MODAL ──
+// entries: array of { kind:'trainer' } | { kind:'pokemon', id, name, sprite, baseHeightM, scaleSupported, scale, isCurrent }
+let heightCompare = { entries: [], includeTrainer: true };
+
+function formatFeetInches(totalInches) {
+  totalInches = Math.round(totalInches);
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  return `${feet}'${inches}"`;
+}
+
+// Shared height formatter so the INFO card and the modal always agree
+function formatHeight(heightM) {
+  if (settings.heightUnit === 'imperial') {
+    const totalInches = heightM / 0.0254;
+    return formatFeetInches(totalInches);
+  }
+  return `${heightM.toFixed(2)} m`;
+}
+
+function getBestArtwork(poke) {
+  return poke.sprites?.other?.['official-artwork']?.front_default
+    || poke.sprites?.front_default
+    || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png`;
+}
+
+// Approximate model of the Scarlet/Violet individual "scale" stat (1-255).
+// 128 ≈ average size (1.0×); 1 ≈ smallest (~0.5×); 255 ≈ largest (~1.5×).
+// This is a fan approximation for visualization purposes, not exact game data.
+const SCALE_DEFAULT = 128;
+function scaleMultiplier(scaleVal) {
+  return 0.5 + scaleVal / 256;
+}
+
+function makePokemonEntry(poke, isCurrent) {
+  return {
+    kind: 'pokemon',
+    uid: 'p' + poke.id + (isCurrent ? '-cur' : '-' + Math.random().toString(36).slice(2,7)),
+    id: poke.id,
+    name: poke.name.replace(/-/g,' '),
+    sprite: getBestArtwork(poke),
+    baseHeightM: poke.height / 10,
+    scaleSupported: pokemonSupportsScale(poke),
+    scale: SCALE_DEFAULT,
+    isCurrent: !!isCurrent,
+  };
+}
+
+function openHeightModal() {
+  if (!currentPokemon) return;
+  heightCompare.entries = [ makePokemonEntry(currentPokemon, true) ];
+  heightCompare.includeTrainer = true;
+  document.getElementById('heightModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderHeightModal();
+}
+
+function closeHeightModal() {
+  document.getElementById('heightModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function toggleTrainerCompare() {
+  heightCompare.includeTrainer = !heightCompare.includeTrainer;
+  renderHeightModal();
+}
+
+function syncTrainerEntryHeight() {
+  // Called from the Settings tab slider — live-update the modal if it's open
+  if (document.getElementById('heightModalOverlay')?.classList.contains('open')) {
+    renderHeightModal();
+  }
+}
+
+function updateTrainerHeightFromModal(totalInches) {
+  totalInches = Math.max(36, Math.min(96, +totalInches || settings.trainerHeightIn));
+  settings.trainerHeightIn = totalInches;
+  renderHeightModal();
+}
+
+function updateTrainerHeightFromModalCm(cm) {
+  const inches = (+cm || 0) / 2.54;
+  updateTrainerHeightFromModal(inches);
+}
+
+function removeCompareEntry(uid) {
+  heightCompare.entries = heightCompare.entries.filter(e => e.uid !== uid);
+  renderHeightModal();
+}
+
+function updateEntryScale(uid, scaleVal) {
+  const entry = heightCompare.entries.find(e => e.uid === uid);
+  if (entry) entry.scale = +scaleVal;
+  renderHeightModal();
+}
+
+async function addComparePokemon() {
+  const input = document.getElementById('heightAddInput');
+  const errEl = document.getElementById('heightAddError');
+  const query = input.value.trim().toLowerCase();
+  if (errEl) errEl.textContent = '';
+  if (!query) return;
+
+  try {
+    const poke = await fetch(`${API}/pokemon/${query}`).then(r => {
+      if (!r.ok) throw new Error('Not found');
+      return r.json();
+    });
+    heightCompare.entries.push(makePokemonEntry(poke, false));
+    input.value = '';
+    renderHeightModal();
+  } catch (e) {
+    if (errEl) errEl.textContent = `✗ "${query}" not found.`;
+  }
+}
+
+function buildPersonSilhouetteSVG(heightPx) {
+  // Simple generic humanoid silhouette, viewBox 0 0 100 280 (aspect ~0.357)
+  const w = Math.round(heightPx * (100/280));
+  return `<svg class="height-silhouette-svg" viewBox="0 0 100 280" style="height:${heightPx}px;width:${w}px" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="28" r="24"/>
+    <path d="M50 52
+      C 28 52, 16 66, 14 92
+      L 10 150 L 24 152 L 30 100
+      L 33 100 L 28 200 L 44 200 L 50 130 L 56 200 L 72 200 L 67 100
+      L 70 100 L 76 152 L 90 150 L 86 92
+      C 84 66, 72 52, 50 52 Z"/>
+    <rect x="38" y="195" width="11" height="78" rx="4"/>
+    <rect x="51" y="195" width="11" height="78" rx="4"/>
+  </svg>`;
+}
+
+function renderHeightModal() {
+  const unit = settings.heightUnit;
+
+  // Compute effective height (meters) for every visible entry
+  const rows = heightCompare.entries.map(e => ({
+    ...e,
+    effHeightM: e.baseHeightM * (e.scaleSupported ? scaleMultiplier(e.scale) : 1),
+  }));
+  if (heightCompare.includeTrainer) {
+    const trainerM = settings.trainerHeightIn * 0.0254;
+    rows.push({ kind: 'trainer', uid: 'trainer', effHeightM: trainerM });
+  }
+
+  // ── Sidebar ──
+  const trainerInches = settings.trainerHeightIn;
+  const trainerFeet = Math.floor(trainerInches/12), trainerRemIn = trainerInches % 12;
+
+  const compareCards = heightCompare.entries.map(e => {
+    const heightLabel = formatHeight(e.baseHeightM * (e.scaleSupported ? scaleMultiplier(e.scale) : 1));
+    const scaleBlock = e.scaleSupported
+      ? `<div class="height-scale-row">
+           <div class="height-scale-row-label">
+             <span>Scale (1–255, SV size)</span>
+             <span class="scale-badge" id="scaleVal-${e.uid}">${e.scale}</span>
+           </div>
+           <input type="range" class="height-scale-slider" min="1" max="255" step="1"
+             value="${e.scale}"
+             oninput="document.getElementById('scaleVal-${e.uid}').textContent=this.value"
+             onchange="updateEntryScale('${e.uid}', this.value)"/>
+         </div>`
+      : `<div class="height-scale-unavailable">No size-scale data available for this Pokémon's games.</div>`;
+    return `
+      <div class="height-compare-card">
+        <div class="height-compare-card-top">
+          <img class="height-chip-sprite" src="${e.sprite}" alt="${e.name}"/>
+          <span class="height-compare-card-name">${e.name}${e.isCurrent ? ' (current)' : ''}</span>
+          <span class="height-compare-card-val">${heightLabel}</span>
+          ${e.isCurrent ? '' : `<button class="height-remove-x" onclick="removeCompareEntry('${e.uid}')">×</button>`}
+        </div>
+        ${scaleBlock}
+      </div>`;
+  }).join('');
+
+  document.getElementById('heightSidebar').innerHTML = `
+    <div class="section-header">Compare To</div>
+    <div class="height-trainer-toggle-row">
+      <label>👤 Trainer</label>
+      <button class="height-checkbox-btn ${heightCompare.includeTrainer ? 'on' : ''}" onclick="toggleTrainerCompare()"></button>
+    </div>
+    ${heightCompare.includeTrainer ? (unit === 'imperial' ? `
+      <div class="height-trainer-input-row">
+        <input type="number" min="1" max="8" value="${trainerFeet}"
+          onchange="updateTrainerHeightFromModal((+this.value)*12 + ${trainerRemIn})"/>
+        <span>ft</span>
+        <input type="number" min="0" max="11" value="${trainerRemIn}"
+          onchange="updateTrainerHeightFromModal(${trainerFeet*12} + (+this.value))"/>
+        <span>in</span>
+      </div>` : `
+      <div class="height-trainer-input-row">
+        <input type="number" min="90" max="245" value="${Math.round(trainerInches*2.54)}"
+          onchange="updateTrainerHeightFromModalCm(this.value)"/>
+        <span>cm</span>
+      </div>`) : ''}
+
+    <div class="section-header">Add Pokémon</div>
+    <div class="height-add-row">
+      <input type="text" id="heightAddInput" placeholder="Name or #..." autocomplete="off" autocapitalize="off"
+        onkeydown="if(event.key==='Enter') addComparePokemon()"/>
+      <button class="height-add-btn" onclick="addComparePokemon()">ADD</button>
+    </div>
+    <div class="height-add-error" id="heightAddError"></div>
+
+    <div class="section-header">In Comparison</div>
+    <div class="height-compare-list">${compareCards}</div>
+
+    <div class="height-scale-note">
+      Scale models the Scarlet/Violet individual size stat (1–255, 128 = average). Approximate, for visualization only.
+    </div>
+  `;
+
+  // ── Chart ──
+  if (rows.length === 0) {
+    document.getElementById('heightChart').innerHTML = '<div class="height-empty-chart">Add a Pokémon or<br/>enable the trainer<br/>to compare heights.</div>';
+    return;
+  }
+
+  const maxHeightM = Math.max(...rows.map(r => r.effHeightM), 0.1);
+  let chartMaxM, majorStepM, minorStepM;
+  if (unit === 'imperial') {
+    const maxFeet = Math.max(1, Math.ceil(maxHeightM / 0.3048 * 1.15));
+    chartMaxM = maxFeet * 0.3048;
+    majorStepM = 0.3048;     // 1 ft
+    minorStepM = 0.0254;     // 1 in
+  } else {
+    const headroom = maxHeightM * 1.15;
+    majorStepM = headroom <= 3 ? 0.5 : 1;
+    minorStepM = headroom <= 3 ? 0.1 : 0.2;
+    chartMaxM = Math.max(majorStepM, Math.ceil(headroom / majorStepM) * majorStepM);
+  }
+
+  const CHART_PX = 300; // fixed pixel height of the track row (silhouettes area), sized for mobile
+  const pxPerMeter = CHART_PX / chartMaxM;
+
+  // Ruler ticks
+  let ticksHtml = '';
+  const tickCount = Math.round(chartMaxM / minorStepM);
+  for (let i = 0; i <= tickCount; i++) {
+    const m = i * minorStepM;
+    if (m > chartMaxM + 1e-6) break;
+    const isMajor = Math.abs((m / majorStepM) - Math.round(m / majorStepM)) < 1e-6;
+    const bottomPx = m * pxPerMeter;
+    ticksHtml += `<div class="height-ruler-tick ${isMajor?'major':''}" style="bottom:${bottomPx}px"></div>`;
+    if (isMajor) {
+      const label = unit === 'imperial' ? `${Math.round(m/0.3048)}'` : `${m.toFixed(m<1?1:0)}m`;
+      ticksHtml += `<div class="height-ruler-label" style="bottom:${bottomPx}px">${label}</div>`;
+    }
+  }
+
+  const slotsHtml = rows.map(r => {
+    const px = Math.max(2, r.effHeightM * pxPerMeter);
+    if (r.kind === 'trainer') {
+      return `<div class="height-col-slot">${buildPersonSilhouetteSVG(px)}</div>`;
+    }
+    return `<div class="height-col-slot">
+      <img class="height-silhouette ${r.isCurrent?'is-current':''}" src="${r.sprite}" alt="${r.name}" style="height:${px}px"/>
+    </div>`;
+  }).join('');
+
+  const footersHtml = rows.map(r => {
+    if (r.kind === 'trainer') {
+      return `<div class="height-column">
+        <div class="height-col-footer">
+          <div class="height-col-icon">👤</div>
+          <div class="height-col-name">Trainer</div>
+          <div class="height-col-value">${formatHeight(r.effHeightM)}</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="height-column">
+      <div class="height-col-footer">
+        <div class="height-col-icon">${r.isCurrent ? '⭐' : ''}</div>
+        <div class="height-col-name">${r.name}</div>
+        <div class="height-col-value">${formatHeight(r.effHeightM)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('heightChart').innerHTML = `
+    <div class="height-track-row" style="height:${CHART_PX}px">
+      <div class="height-ruler">${ticksHtml}</div>
+      <div class="height-ground-line"></div>
+      <div class="height-silhouettes-row">${slotsHtml}</div>
+    </div>
+    <div class="height-footer-row">${footersHtml}</div>
+  `;
+}
+
+// ── CRY PLAYER ──
+// Cries sourced from PokeAPI's raw sprite CDN and smogon/veekun mirrors
+// Gen 1-5: .ogg from pokemondb; Gen 6+: mp3 from pokéapi GitHub sprites repo
+const CRY_SOURCES = [
+  { label: 'Latest',              gen: 'latest', url: id => `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${id}.ogg` },
+  { label: 'Gen I–V (Legacy OGG)',gen: 'legacy', url: id => `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${id}.ogg` },
+];
+
+let cryAudio = null;
+let cryPlayingId = null;
+
+function buildCryGenOptions(pokeId) {
+  return CRY_SOURCES.map((s, i) =>
+    `<option value="${i}">${s.label}</option>`
+  ).join('');
+}
+
+function updateCryStatus() {
+  const sel = document.getElementById('cryGenSelect');
+  const status = document.getElementById('cryStatus');
+  if (!sel || !status) return;
+  const src = CRY_SOURCES[+sel.value];
+  if (src) status.textContent = `Source: ${src.url(currentPokemon?.id || '…')}`;
+}
+
+function playCry(pokeId) {
+  if (!pokeId) return;
+  const sel = document.getElementById('cryGenSelect');
+  const btn = document.getElementById('cryPlayBtn');
+  const waveform = document.getElementById('cryWaveform');
+  const status = document.getElementById('cryStatus');
+  const srcIdx = sel ? +sel.value : 0;
+  const src = CRY_SOURCES[srcIdx];
+  if (!src) return;
+
+  // Stop if already playing this cry
+  if (cryAudio && !cryAudio.paused) {
+    cryAudio.pause();
+    cryAudio = null;
+    if (btn) { btn.textContent = '▶ PLAY CRY'; btn.classList.remove('playing'); }
+    if (waveform) waveform.classList.remove('active');
+    return;
+  }
+
+  const url = src.url(pokeId);
+  const audio = new Audio(url);
+  cryAudio = audio;
+  cryPlayingId = pokeId;
+
+  if (btn) { btn.innerHTML = '■ STOP'; btn.classList.add('playing'); }
+  if (waveform) waveform.classList.add('active');
+  if (status) status.textContent = 'Playing…';
+
+  audio.play().catch(err => {
+    if (status) status.textContent = '✗ Could not load cry for this source/Pokémon.';
+    if (btn) { btn.innerHTML = '▶ PLAY CRY'; btn.classList.remove('playing'); }
+    if (waveform) waveform.classList.remove('active');
+  });
+
+  audio.onended = () => {
+    if (btn) { btn.innerHTML = '▶ PLAY CRY'; btn.classList.remove('playing'); }
+    if (waveform) waveform.classList.remove('active');
+    if (status) status.textContent = '';
+    cryAudio = null;
+  };
+}
+
+// ── SETTINGS RENDER ──
+function renderSettings() {
+  setContent(`
+    <div class="settings-section">
+      <div class="section-header">Display</div>
+
+      <div class="settings-row">
+        <div class="settings-label-group">
+          <label>Pokémon Preview Size</label>
+          <span class="settings-sublabel">Size of sprite on top screen</span>
+        </div>
+        <div class="settings-control">
+          <input type="range" class="settings-slider" min="60" max="150" step="5"
+            value="${settings.spriteSize}"
+            oninput="settings.spriteSize=+this.value; document.getElementById('spriteSizeVal').textContent=this.value+'px'; applySettings()"/>
+          <span class="settings-value-badge" id="spriteSizeVal">${settings.spriteSize}px</span>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-label-group">
+          <label>Font Size</label>
+          <span class="settings-sublabel">Scales the tab content text</span>
+        </div>
+        <div class="settings-control">
+          <input type="range" class="settings-slider" min="0.9" max="1.3" step="0.1"
+            value="${settings.fontSize}"
+            oninput="settings.fontSize=+this.value; document.getElementById('fontSizeVal').textContent=Math.round(this.value*100)+'%'; applySettings()"/>
+          <span class="settings-value-badge" id="fontSizeVal">${Math.round(settings.fontSize*100)}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="section-header">Units</div>
+
+      <div class="settings-row">
+        <div class="settings-label-group">
+          <label>Height Unit</label>
+          <span class="settings-sublabel">Shown on the INFO tab</span>
+        </div>
+        <div class="settings-control">
+          <div class="settings-toggle-group">
+            <button class="settings-toggle-btn ${settings.heightUnit==='imperial'?'active':''}"
+              id="unitImperial"
+              onclick="settings.heightUnit='imperial'; document.getElementById('unitImperial').classList.add('active'); document.getElementById('unitMetric').classList.remove('active'); if(currentPokemon&&currentTab==='info')renderInfo()">
+              ft / in
+            </button>
+            <button class="settings-toggle-btn ${settings.heightUnit==='metric'?'active':''}"
+              id="unitMetric"
+              onclick="settings.heightUnit='metric'; document.getElementById('unitMetric').classList.add('active'); document.getElementById('unitImperial').classList.remove('active'); if(currentPokemon&&currentTab==='info')renderInfo()">
+              m
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="section-header">Height Comparison</div>
+
+      <div class="settings-row">
+        <div class="settings-label-group">
+          <label>Trainer Height</label>
+          <span class="settings-sublabel">Used as the default comparison figure</span>
+        </div>
+        <div class="settings-control">
+          <input type="range" class="settings-slider" min="48" max="84" step="1"
+            value="${settings.trainerHeightIn}"
+            oninput="settings.trainerHeightIn=+this.value; document.getElementById('trainerHeightVal').textContent=formatFeetInches(this.value); syncTrainerEntryHeight()"/>
+          <span class="settings-value-badge" id="trainerHeightVal">${formatFeetInches(settings.trainerHeightIn)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-top:8px">
+      <button class="settings-reset-btn" onclick="settings={...SETTINGS_DEFAULTS}; applySettings(); renderSettings()">↺ Reset to Defaults</button>
+    </div>
+  `);
+}
+
+// ── HELPERS ──
+function showLoading() {
+  document.getElementById('contentScreen').innerHTML = `
+    <div class="loading">
+      <div class="pokeball-spin"></div>
+      <p>LOADING...</p>
+    </div>`;
+  document.getElementById('screenContent').innerHTML = `
+    <div class="loading" style="height:auto;gap:8px">
+      <div class="pokeball-spin" style="width:30px;height:30px"></div>
+    </div>`;
+}
+
+function showError(msg) {
+  document.getElementById('contentScreen').innerHTML = `<div class="error-msg"><p>${msg}</p></div>`;
+  document.getElementById('screenContent').innerHTML = `
+    <div class="screen-placeholder">
+      <p>NOT FOUND</p>
+    </div>`;
+  document.getElementById('idDisplay').textContent = '---';
+}
+
+function setContent(html) {
+  document.getElementById('contentScreen').innerHTML = html;
+}
+
+// Keyboard shortcut / Escape closes modal
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('heightModalOverlay')?.classList.contains('open')) {
+    closeHeightModal();
+  }
+});
+
+// Apply content screen font scale on init
+document.getElementById('contentScreen').style.fontSize = settings.fontSize + 'em';
+applySettings();
+
+// Start with a random fan-favourite
+loadPokemon('pikachu');
+</script>
+</body>
+</html>
